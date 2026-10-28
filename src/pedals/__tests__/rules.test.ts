@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cc, MemoryStorage, pc, setup } from '../../editor/core/__tests__/helpers';
 import { PresetStore } from '../../editor/core/presets';
+import { blooper } from '../blooper';
 import { brothersam } from '../brothersam';
 import { clean } from '../clean';
 import { genlossmkii } from '../genlossmkii';
@@ -430,5 +431,65 @@ describe('Lost + Found', () => {
     engine.command('random-both');
     engine.set('d18', 0); // ramping stopped
     expect(sink.take()).toEqual([cc(53, 12), cc(54, 0), cc(114, 127), cc(52, 0)]);
+  });
+});
+
+describe('Blooper', () => {
+  it('left footswitch toggles RECORD (CC1 127/0), hold = one-shot overdub (CC9)', () => {
+    const { engine, sink, advance } = setup(blooper);
+    click(engine, 'rec');
+    click(engine, 'rec');
+    hold(engine, advance, 'rec');
+    expect(sink.take()).toEqual([cc(1, 127), cc(1, 0), cc(9, 127)]);
+  });
+
+  it('right footswitch stops (CC4), hold = hold switch B (CC8); transport buttons send their CC', () => {
+    const { engine, sink, advance } = setup(blooper);
+    click(engine, 'stop');
+    hold(engine, advance, 'stop');
+    engine.command('play');
+    engine.command('undo');
+    engine.command('undo'); // repeatable
+    expect(sink.take()).toEqual([cc(4, 127), cc(8, 127), cc(2, 127), cc(5, 127), cc(5, 127)]);
+  });
+
+  it('modifier buttons send 127 on every click and are never replayed', () => {
+    const { engine, sink } = setup(blooper);
+    engine.set('b1', 1);
+    engine.set('b1', 0);
+    expect(sink.take()).toEqual([cc(30, 127), cc(30, 127)]);
+    engine.set('b1', 1);
+    sink.take();
+    engine.sendAll();
+    engine.reset();
+    engine.load({ ...engine.getState().values, b1: 0, b2: 1, rec: 127 });
+    const ccs = sink.take().map((m) => (m.type === 'cc' ? m.cc : -1));
+    for (const transient of [1, 2, 3, 4, 5, 6, 7, 8, 9, 30, 31]) expect(ccs).not.toContain(transient);
+    expect(engine.getState().values.b1).toBe(1); // state kept, not overwritten by the preset
+  });
+
+  it('LEDs follow the transport: red recording, green playing, off stopped; buttons blue', () => {
+    const { engine } = setup(blooper);
+    const leds = () => blooper.leds(engine.getState());
+    expect(leds()[0]).toEqual({ color: 'off' });
+    engine.set('rec', 127);
+    expect(leds()[0]).toEqual({ color: 'red' });
+    engine.set('rec', 0);
+    expect(leds()[0]).toEqual({ color: 'green' });
+    engine.command('stop');
+    expect(leds()[0]).toEqual({ color: 'off' });
+    engine.set('b2', 1);
+    expect(blooper.buttonLeds?.(engine.getState())).toEqual([{ color: 'off' }, { color: 'blue' }]);
+  });
+
+  it('loops are zero-based program changes 0–15 and there is no live / preset toggle', () => {
+    const { engine, sink } = setup(blooper);
+    engine.recall(1);
+    engine.recall(16);
+    engine.recall(0);
+    engine.recall(17);
+    engine.presetToggle('middle');
+    expect(sink.take()).toEqual([pc(0), pc(15)]);
+    expect(engine.recallRange.label).toBe('Loop');
   });
 });

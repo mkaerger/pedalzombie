@@ -1,4 +1,5 @@
 import type { PedalDefinition } from '../editor/core/types';
+import { blooper } from './blooper';
 import { brothersam } from './brothersam';
 import { clean } from './clean';
 import { genlossmkii } from './genlossmkii';
@@ -13,6 +14,7 @@ import { warpedvinylmkii } from './warpedvinylmkii';
 
 /** All editors, newest pedal first (home page order). */
 export const pedals: PedalDefinition[] = [
+  blooper,
   brothersam,
   clean,
   genlossmkii,

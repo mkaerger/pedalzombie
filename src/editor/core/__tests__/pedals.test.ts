@@ -26,6 +26,7 @@ const NOT_SENT: Record<string, number[]> = {
   'onward-editor': [100, 104, 107],
   'lossy-editor': [100, 104],
   'lostfound-editor': [100, 104],
+  'blooper-editor': [11, 100], // 11 = multi-control; the editor uses the individual transport CCs
 };
 
 /** Every CC the editor can send for a pedal. */
@@ -70,6 +71,8 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
     ),
   );
   const footswitchRefs = pedal.face.footswitches.flatMap((f) => [f.press, f.hold].flatMap((a) => (a?.type === 'toggle' ? [a.control] : [])));
+  const faceExtras = [...(pedal.face.buttons ?? []), ...(pedal.face.centerToggle ? [pedal.face.centerToggle] : [])];
+  const commandStateRefs = (pedal.commands ?? []).flatMap((c) => Object.keys(c.then ?? {}));
 
   it('has unique control ids', () => {
     expect(ids.size).toBe(pedal.controls.length);
@@ -119,10 +122,18 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
       ...pedal.random.flatMap((g) => g.controls),
       ...controlRefs,
       ...footswitchRefs,
+      ...faceExtras,
+      ...commandStateRefs,
       ...(pedal.tap?.bpmControl ? [pedal.tap.bpmControl] : []),
       ...(pedal.ideas ?? []).flatMap((g) => g.items.flatMap((i) => Object.keys(i.values))),
     ];
     for (const r of refs) expect(ids.has(r), r).toBe(true);
+    const commandIds = new Set((pedal.commands ?? []).map((c) => c.id));
+    const commandRefs = [
+      ...pedal.face.footswitches.flatMap((f) => [f.press, f.hold].flatMap((a) => (a?.type === 'command' ? [a.id] : []))),
+      ...pedal.sections.flatMap((s) => s.blocks).flatMap((b) => (b.type === 'commands' ? b.commands : [])),
+    ];
+    for (const r of commandRefs) expect(commandIds.has(r), `command ${r}`).toBe(true);
   });
 
   it('shows every control somewhere in the UI', () => {
@@ -131,6 +142,8 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
       ...pedal.face.toggles,
       ...controlRefs,
       ...footswitchRefs,
+      ...faceExtras,
+      ...commandStateRefs,
       ...(pedal.tap?.bpmControl ? [pedal.tap.bpmControl] : []),
     ]);
     for (const id of ids) expect(placed.has(id), `${id} is not reachable in the UI`).toBe(true);

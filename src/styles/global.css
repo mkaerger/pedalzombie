@@ -170,3 +170,20 @@ img {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* "Source code on GitHub" link on the about page */
+.github-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+}
+.github-link a:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}

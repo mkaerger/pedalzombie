@@ -39,6 +39,11 @@ interface ControlBase {
    * which encodes two footswitches in one value.
    */
   send?: (value: number, values: ControlValues) => MidiMessage[];
+  /**
+   * `false` for transient state the editor must not replay (sync, reset, presets):
+   * e.g. a button whose CC *toggles* the pedal, or the looper transport.
+   */
+  sync?: false;
 }
 
 export interface KnobControl extends ControlBase {
@@ -100,7 +105,7 @@ export type ControlKind = Control['kind'];
 // ---------------------------------------------------------------------------
 // Footswitches and LEDs
 
-export type LedColor = 'off' | 'red' | 'green' | 'amber';
+export type LedColor = 'off' | 'red' | 'green' | 'amber' | 'blue';
 
 export interface LedState {
   color: LedColor;
@@ -135,7 +140,9 @@ export type FootswitchAction =
   /** Send `on` while held, `off` on release. */
   | { type: 'momentary'; cc: number; on: number; off: number; enabled?: (values: ControlValues) => boolean }
   /** Register a tap (see `PedalDefinition.tap`). */
-  | { type: 'tap' };
+  | { type: 'tap' }
+  /** Run one of `PedalDefinition.commands` (one-shot CC), e.g. a looper's STOP. */
+  | { type: 'command'; id: string };
 
 export interface Footswitch {
   id: string;
@@ -153,6 +160,8 @@ export type LayoutBlock =
   | { type: 'controls'; title?: string; controls: string[]; columns?: number }
   | { type: 'dips'; title?: string; banks: { title: string; controls: string[] }[] }
   | { type: 'select'; title?: string; control: string }
+  /** Buttons for some of `PedalDefinition.commands`, e.g. a looper transport. */
+  | { type: 'commands'; title?: string; commands: string[] }
   | { type: 'custom'; title?: string; component: string };
 
 export interface Section {
@@ -201,6 +210,10 @@ export interface PedalDefinition {
     toggles: string[];
     /** Footswitches left → right; the preset toggle sits between them. */
     footswitches: [Footswitch, Footswitch];
+    /** A toggle control rendered between the footswitches instead of the preset toggle. */
+    centerToggle?: string;
+    /** Switch controls rendered as push buttons on the pedal's edge (Blooper's modifier buttons). */
+    buttons?: string[];
   };
   /** Further panels below the pedal face (alt controls, dips, …). */
   sections: Section[];
@@ -210,6 +223,12 @@ export interface PedalDefinition {
     store?: { cc: number; minSlot: number; maxSlot: number };
     /** Send PC 0 (live) before applying an app preset. */
     liveBeforeLoad?: boolean;
+    /** `false` when the pedal has no preset toggle / live state (PC 0 is a slot then). */
+    toggle?: boolean;
+    /** Slots recalled by program change; default 1–122 with PC = slot. */
+    recall?: { first: number; last: number; program: (slot: number) => number; label?: string };
+    /** How to save on the pedal when there is no save CC. */
+    manualStoreHint?: string;
   };
 
   /** Tap tempo. */
@@ -233,10 +252,20 @@ export interface PedalDefinition {
   random: RandomGroup[];
 
   /** One-shot commands. With `confirm` the UI asks first (factory reset); without it fires immediately (retrigger). */
-  commands?: { id: string; label: string; cc: number; value: number; confirm?: string }[];
+  commands?: {
+    id: string;
+    label: string;
+    cc: number;
+    value: number;
+    confirm?: string;
+    /** Editor state after the command (no MIDI sent), e.g. "stopped" for the LEDs. */
+    then?: ControlValues;
+  }[];
 
   /** Derived LED colours [left, middle, right]. */
   leds: (ctx: LedContext) => [LedState, LedState, LedState];
+  /** LEDs of `face.buttons`, in the same order. */
+  buttonLeds?: (ctx: LedContext) => LedState[];
 
   /**
    * Called after a control changed (by the user, a preset or randomize).

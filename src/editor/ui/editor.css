@@ -162,6 +162,48 @@
   gap: 8px;
 }
 
+/* push buttons on the pedal's edge (Blooper's modifier buttons) */
+.pedal__buttons {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 24px;
+  margin: 4px -22px -22px;
+  padding: 14px 22px 16px;
+  background: rgb(0 0 0 / 0.14);
+  border-radius: 0 0 22px 22px;
+}
+
+.push-button {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+
+.push-button__button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  background: radial-gradient(circle at 35% 30%, #ffffff, #d9d9dd 55%, #8d8d93);
+  box-shadow:
+    0 0 0 5px rgb(0 0 0 / 0.22),
+    0 4px 8px rgb(0 0 0 / 0.4);
+}
+
+.push-button__button[aria-pressed='true'] {
+  transform: translateY(2px);
+  box-shadow:
+    0 0 0 5px rgb(0 0 0 / 0.22),
+    0 1px 3px rgb(0 0 0 / 0.4);
+}
+
+.push-button__label {
+  font: 600 0.72rem/1 var(--font);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 /* -- knob ----------------------------------------------------------------- */
 
 .control {
@@ -383,6 +425,11 @@
 .led--amber {
   background: #ffb020;
   box-shadow: 0 0 10px 2px rgb(255 176 32 / 0.6);
+}
+
+.led--blue {
+  background: #3d8bff;
+  box-shadow: 0 0 10px 2px rgb(61 139 255 / 0.65);
 }
 
 .led.is-dim {

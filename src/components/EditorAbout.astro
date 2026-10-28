@@ -20,6 +20,8 @@ const toggles = pedal.face.toggles
   .filter((c): c is Extract<Control, { kind: 'toggle' }> => c?.kind === 'toggle')
   .map((c) => `${c.label} (${c.options.map((o) => o.label).join(' / ')})`);
 const footswitches = pedal.face.footswitches.map((f) => (f.hold ? `${f.label} — hold: ${f.hold.label}` : f.label));
+const buttons = (pedal.face.buttons ?? []).map(label);
+const commands = (pedal.commands ?? []).map((c) => c.label);
 
 const sectionControls = (match: (id: string) => boolean) =>
   pedal.sections
@@ -41,7 +43,7 @@ const features = [
   pedal.tap ? (pedal.tap.bpmControl ? 'set the tempo by tapping or typing a BPM' : 'tap the tempo') : '',
   pedal.random.length ? `randomize ${pedal.random.map((g) => g.label.toLowerCase()).join(', ')}` : '',
   pedal.ideas?.length ? `try quick settings for ${pedal.ideas.map((g) => g.title.toLowerCase()).join(' and ')}` : '',
-  pedal.commands?.length ? `trigger ${pedal.commands.map((c) => c.label).join(', ')}` : '',
+  commands.length ? `trigger ${commands.join(', ')}` : '',
 ].filter(Boolean);
 ---
 
@@ -57,6 +59,7 @@ const features = [
     <li><strong>Knobs:</strong> {faceKnobs.join(', ')}</li>
     {toggles.length > 0 && <li><strong>Toggles:</strong> {toggles.join('; ')}</li>}
     <li><strong>Footswitches:</strong> {footswitches.join('; ')}</li>
+    {buttons.length > 0 && <li><strong>Buttons on the edge:</strong> {buttons.join(', ')}</li>}
   </ul>
 
   {hidden.length > 0 && (

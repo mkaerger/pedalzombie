@@ -1,5 +1,5 @@
 import type { PointerEvent } from 'react';
-import type { Footswitch as FootswitchDef } from '../core/types';
+import type { Footswitch as FootswitchDef, LedState } from '../core/types';
 import { ControlView } from './ControlView';
 import { useEditor, useEngineState } from './context';
 import { Led } from './widgets';
@@ -69,12 +69,35 @@ function PresetToggle() {
   );
 }
 
+/** Push button on the pedal's edge (Blooper's modifier buttons): a latching switch with its own LED. */
+function PushButton({ id, led }: { id: string; led: LedState }) {
+  const { engine } = useEditor();
+  const { values } = useEngineState();
+  const control = engine.control(id);
+  if (control?.kind !== 'switch') return null;
+  const on = values[id] === control.on;
+  return (
+    <div className="push-button">
+      <Led state={led} label={control.label} />
+      <button
+        type="button"
+        className="push-button__button"
+        aria-pressed={on}
+        title={control.hint}
+        onClick={() => engine.set(id, on ? control.off : control.on)}
+      />
+      <span className="push-button__label">{control.label}</span>
+    </div>
+  );
+}
+
 /** The pedal enclosure: main knobs, toggles, LEDs, footswitches. */
 export function PedalFace() {
   const { engine } = useEditor();
   const state = useEngineState();
-  const { face, name } = engine.pedal;
+  const { face, name, presets } = engine.pedal;
   const leds = engine.pedal.leds(state);
+  const buttonLeds = engine.pedal.buttonLeds?.(state) ?? [];
 
   return (
     <section className="pedal" aria-label={`${name} controls`}>
@@ -104,9 +127,17 @@ export function PedalFace() {
 
       <div className="pedal__switches">
         <Footswitch fs={face.footswitches[0]} />
-        <PresetToggle />
+        {face.centerToggle ? <ControlView id={face.centerToggle} /> : presets.toggle !== false ? <PresetToggle /> : <span />}
         <Footswitch fs={face.footswitches[1]} />
       </div>
+
+      {face.buttons && (
+        <div className="pedal__buttons">
+          {face.buttons.map((id, i) => (
+            <PushButton key={id} id={id} led={buttonLeds[i] ?? { color: 'off' }} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

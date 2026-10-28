@@ -119,3 +119,15 @@ Start: `npm run build && npm run preview`, open the editor in Chrome, **Connect 
 - [ ] Tap (CC93), MIDI clock CC51, subdivisions CC53/54 (0–12), **CC52 ramping**: editor sends 1 = running, 0 =
       stopped (manual: "STOP RAMPING on = 0, off = 1 or >") — confirm
 - [ ] Random mode commands CC112/113/114; factory reset CC56; dry kill CC57; dips CC61–68, CC71–78
+
+## Blooper
+
+- [ ] Knobs CC14–19, ramp CC20; toggles MOD A / MODE / MOD B (CC21–23 = 1/2/3), save toggle CC24 (preview / loop / save-load)
+- [ ] Left footswitch: click = record on (CC1 = 127) / off (CC1 = 0 → playback); hold = one-shot overdub (CC9)
+- [ ] Right footswitch: click = stop (CC4); hold = "hold switch B" (CC8: undo/redo menu, sampler looping on/off)
+- [ ] Transport buttons: play CC2, overdub CC3, undo CC5, redo CC6, erase CC7 — confirm what CC1 = 0 does (play or stop?)
+- [ ] **Modifier buttons** (edge): each click sends CC30 / CC31 = 127 and must toggle the modifier; the editor's
+      on/off state and LED are a guess — if they drift from the pedal, click once more
+- [ ] Sync pedal / editor defaults / preset load never send CC1–9, CC30, CC31
+- [ ] **Loops are zero-based:** Recall loop 1 sends PC 0, loop 16 sends PC 15. Save: hold the right footswitch, press Recall
+- [ ] MIDI clock CC51, ramping CC52, note division CC54 (0–7)

@@ -1,5 +1,5 @@
 import { useState, type SubmitEvent, type ReactNode } from 'react';
-import type { Section } from '../core/types';
+import type { PedalDefinition, Section } from '../core/types';
 import type { StoredPreset } from '../core/presets';
 import { ControlView } from './ControlView';
 import { useEditor, useEngineState, useMidiState } from './context';
@@ -48,12 +48,45 @@ export function SectionPanel({ section }: { section: Section }) {
                 <ControlView id={b.control} />
               </div>
             );
+          case 'commands':
+            return (
+              <div key={i} className="block">
+                {b.title && <h3 className="block__title">{b.title}</h3>}
+                <CommandButtons ids={b.commands} />
+              </div>
+            );
           case 'custom':
             return null;
         }
       })}
     </Panel>
   );
+}
+
+/** Buttons for one-shot commands; those with `confirm` ask first. */
+function CommandButtons({ ids }: { ids: string[] }) {
+  const { engine } = useEditor();
+  const commands = (engine.pedal.commands ?? []).filter((c) => ids.includes(c.id));
+  return (
+    <div className="button-row">
+      {commands.map((c) => (
+        <button
+          key={c.id}
+          type="button"
+          className={c.confirm ? 'button button--danger' : 'button'}
+          onClick={() => (!c.confirm || window.confirm(c.confirm)) && engine.command(c.id)}
+        >
+          {c.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Commands not already placed in a section's `commands` block. */
+function unplacedCommands(pedal: PedalDefinition) {
+  const placed = new Set(pedal.sections.flatMap((s) => s.blocks).flatMap((b) => (b.type === 'commands' ? b.commands : [])));
+  return (pedal.commands ?? []).filter((c) => !placed.has(c.id)).map((c) => c.id);
 }
 
 export function IdeasPanel() {
@@ -112,16 +145,7 @@ export function ToolsPanel() {
           <button type="button" className="button" onClick={() => engine.reset()}>
             Editor defaults
           </button>
-          {pedal.commands?.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className={c.confirm ? 'button button--danger' : 'button'}
-              onClick={() => (!c.confirm || window.confirm(c.confirm)) && engine.command(c.id)}
-            >
-              {c.label}
-            </button>
-          ))}
+          <CommandButtons ids={unplacedCommands(pedal)} />
         </div>
       </div>
 
@@ -163,7 +187,8 @@ export function PresetsPanel() {
   const { values } = useEngineState();
   const [list, setList] = useState<StoredPreset[]>(() => presets.list());
   const [name, setName] = useState('');
-  const [slot, setSlot] = useState(3);
+  const recall = engine.recallRange;
+  const [slot, setSlot] = useState(Math.min(3, recall.last));
   const store = engine.pedal.presets.store;
 
   const save = (e: SubmitEvent<HTMLFormElement>) => {
@@ -221,8 +246,8 @@ export function PresetsPanel() {
         <h3 className="block__title">On the pedal</h3>
         <div className="inline-form">
           <label>
-            <span>Slot</span>
-            <input type="number" min={1} max={122} value={slot} onChange={(e) => setSlot(Number(e.target.value))} />
+            <span>{recall.label ?? 'Slot'}</span>
+            <input type="number" min={recall.first} max={recall.last} value={slot} onChange={(e) => setSlot(Number(e.target.value))} />
           </label>
           <button type="button" className="button" onClick={() => engine.recall(slot)}>
             Recall
@@ -240,7 +265,8 @@ export function PresetsPanel() {
         </div>
         {!store && (
           <p className="hint">
-            This pedal saves presets only while both footswitches are held: hold them and press <em>Recall</em> to save into the slot.
+            {engine.pedal.presets.manualStoreHint ??
+              'This pedal saves presets only while both footswitches are held: hold them and press Recall to save into the slot.'}
           </p>
         )}
       </div>

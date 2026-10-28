@@ -15,6 +15,7 @@ save presets, store them on the pedal. No install, no account, nothing leaves yo
 | MOOD MKII | [/moodmkii-editor/](https://pedalzombie.com/moodmkii-editor/) |
 | Generation Loss MKII | [/generationloss-editor/](https://pedalzombie.com/generationloss-editor/) |
 | Habit | [/habit-editor/](https://pedalzombie.com/habit-editor/) |
+| Blooper | [/blooper-editor/](https://pedalzombie.com/blooper-editor/) |
 | MOOD | [/mood-editor/](https://pedalzombie.com/mood-editor/) |
 | Warped Vinyl MKII | [/warpedvinyl-editor/](https://pedalzombie.com/warpedvinyl-editor/) |
 

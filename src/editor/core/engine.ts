@@ -147,6 +147,7 @@ export class EditorEngine {
       const [id, raw] = queue[i];
       const control = this.controls.get(id);
       if (!control) continue;
+      if (control.sync === false && mode === 'all') continue; // transient state is never replayed
       const v = coerce(control, raw);
       if (v === undefined) continue;
       if (values[id] === v && mode === 'changed') continue;
@@ -214,13 +215,19 @@ export class EditorEngine {
 
   // -- pedal presets (program change) ----------------------------------------
 
+  private get hasToggle() {
+    return this.pedal.presets.toggle !== false;
+  }
+
   private goLive() {
+    if (!this.hasToggle) return;
     this.sink.send({ type: 'pc', program: 0 });
     this.update({ preset: { kind: 'live' } });
   }
 
   /** The 3-way preset toggle: left = slot 2, middle = live, right = slot 1. */
   presetToggle(position: 'left' | 'middle' | 'right') {
+    if (!this.hasToggle) return;
     this.onEvent('preset_toggle', { position });
     if (position === 'middle') return this.goLive();
     const slot = position === 'left' ? 2 : 1;
@@ -228,11 +235,21 @@ export class EditorEngine {
     this.update({ preset: { kind: 'toggle', slot } });
   }
 
+  /** Slots the pedal recalls by program change. */
+  get recallRange() {
+    return this.pedal.presets.recall ?? { first: 1, last: 122, program: (slot: number) => slot, label: 'Slot' };
+  }
+
   recall(slot: number) {
-    if (!Number.isInteger(slot) || slot < 0 || slot > 122) return;
+    if (!Number.isInteger(slot)) return;
+    if (slot === 0 && this.hasToggle) {
+      this.onEvent('pedal_recall', { slot });
+      return this.goLive();
+    }
+    const range = this.recallRange;
+    if (slot < range.first || slot > range.last) return;
     this.onEvent('pedal_recall', { slot });
-    if (slot === 0) return this.goLive();
-    this.sink.send({ type: 'pc', program: slot });
+    this.sink.send({ type: 'pc', program: range.program(slot) });
     const prev = this.state.preset;
     this.update({ preset: { kind: 'recall', slot, flip: prev.kind === 'recall' ? !prev.flip : false } });
   }
@@ -252,6 +269,7 @@ export class EditorEngine {
     if (!cmd) return;
     this.onEvent('command', { command: id });
     this.sink.send({ type: 'cc', cc: cmd.cc, value: cmd.value });
+    if (cmd.then) this.update({ values: { ...this.state.values, ...cmd.then } });
   }
 
   // -- footswitches ---------------------------------------------------------
@@ -318,6 +336,9 @@ export class EditorEngine {
         return;
       case 'tap':
         if (phase === 'down') this.tap();
+        return;
+      case 'command':
+        if (phase === 'down') this.command(action.id);
         return;
     }
   }
