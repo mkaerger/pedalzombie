@@ -54,7 +54,7 @@ Vitest. The build is plain static files, hosted on ordinary shared hosting.
 
 ## Development
 
-Requires Node 22 (see `.nvmrc`).
+Requires Node 22.23.4 or newer (see `.nvmrc`; Astro 7 refuses older 22.x builds).
 
 ```sh
 npm install
