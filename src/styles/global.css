@@ -171,8 +171,13 @@ img {
   white-space: nowrap;
 }
 
-/* "Source code on GitHub" link on the about page */
-.github-link a {
+/* GitHub and Instagram links on the about page */
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.social-links a {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
@@ -183,7 +188,7 @@ img {
   text-decoration: none;
   font-weight: 500;
 }
-.github-link a:hover {
+.social-links a:hover {
   border-color: var(--brand);
   color: var(--brand);
 }
