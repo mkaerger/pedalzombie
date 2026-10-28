@@ -97,6 +97,10 @@ The workflow needs three repository secrets: `SFTP_HOST`, `SFTP_USER`, `SFTP_PAS
 `sftp`. Connection settings come from `../sftp.conf`, the password from the macOS keychain item `pedalzombie-sftp`.
 No credentials live in this repository.
 
+## License
+
+MIT — see [LICENSE](LICENSE). Use it, fork it, build your own editors with it.
+
 ## Credits
 
 - Chase Bliss for the pedals and the public MIDI manuals.
