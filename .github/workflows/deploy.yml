@@ -27,7 +27,15 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npm run check
+      - name: Type check
+        shell: bash
+        # On failure the output becomes an annotation, readable without repository access.
+        run: |
+          set -o pipefail
+          if ! npm run check 2>&1 | tee check.log; then
+            echo "::error title=astro check failed::$(tail -c 3500 check.log | tr '\n' ' ' | sed 's/%/%25/g')"
+            exit 1
+          fi
       - run: npm run build
       - uses: actions/upload-artifact@v4
         with:
