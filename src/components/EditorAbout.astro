@@ -1,0 +1,102 @@
+---
+/**
+ * Static, crawlable description of an editor, generated from the pedal definition.
+ * Lists what the editor covers in plain words (no MIDI numbers).
+ */
+import type { Control, PedalDefinition } from '../editor/core/types';
+
+interface Props {
+  pedal: PedalDefinition;
+}
+
+const { pedal } = Astro.props;
+const byId = new Map(pedal.controls.map((c) => [c.id, c]));
+const label = (id: string) => byId.get(id)?.label ?? id;
+const unique = (xs: string[]) => [...new Set(xs)];
+
+const faceKnobs = unique(pedal.face.knobs.flat().map(label));
+const toggles = pedal.face.toggles
+  .map((id) => byId.get(id))
+  .filter((c): c is Extract<Control, { kind: 'toggle' }> => c?.kind === 'toggle')
+  .map((c) => `${c.label} (${c.options.map((o) => o.label).join(' / ')})`);
+const footswitches = pedal.face.footswitches.map((f) => (f.hold ? `${f.label} — hold: ${f.hold.label}` : f.label));
+
+const sectionControls = (match: (id: string) => boolean) =>
+  pedal.sections
+    .filter((s) => match(s.id))
+    .flatMap((s) => s.blocks)
+    .flatMap((b) => (b.type === 'controls' ? b.controls : b.type === 'select' ? [b.control] : []))
+    .map(label);
+const hidden = unique(sectionControls((id) => id !== 'dips' && id !== 'global'));
+const globals = unique(sectionControls((id) => id === 'global'));
+const dips = unique(
+  pedal.sections.flatMap((s) => s.blocks).flatMap((b) => (b.type === 'dips' ? b.banks.flatMap((bank) => bank.controls) : [])).map(label),
+);
+
+const features = [
+  pedal.presets.store
+    ? 'store and recall presets in the pedal’s 122 slots'
+    : 'recall the presets stored on the pedal',
+  'save your own presets in the browser',
+  pedal.tap ? (pedal.tap.bpmControl ? 'set the tempo by tapping or typing a BPM' : 'tap the tempo') : '',
+  pedal.random.length ? `randomize ${pedal.random.map((g) => g.label.toLowerCase()).join(', ')}` : '',
+  pedal.ideas?.length ? `try quick settings for ${pedal.ideas.map((g) => g.title.toLowerCase()).join(' and ')}` : '',
+  pedal.commands?.length ? `trigger ${pedal.commands.map((c) => c.label).join(', ')}` : '',
+].filter(Boolean);
+---
+
+<section class="wrap prose editor-about" aria-labelledby="about-title">
+  <h2 id="about-title">About the {pedal.name} editor</h2>
+  <p>
+    This free editor controls the {pedal.manufacturer} {pedal.name} from your browser via Web MIDI. {pedal.tagline}{' '}
+    Every change is sent to the pedal immediately, so you hear what you tweak.
+  </p>
+
+  <h3>On the pedal</h3>
+  <ul>
+    <li><strong>Knobs:</strong> {faceKnobs.join(', ')}</li>
+    {toggles.length > 0 && <li><strong>Toggles:</strong> {toggles.join('; ')}</li>}
+    <li><strong>Footswitches:</strong> {footswitches.join('; ')}</li>
+  </ul>
+
+  {hidden.length > 0 && (
+    <>
+      <h3>Hidden options</h3>
+      <p>
+        Reach the alt controls without the button dance: {hidden.join(', ')}.
+      </p>
+    </>
+  )}
+
+  {dips.length > 0 && (
+    <>
+      <h3>Dip switches</h3>
+      <p>Flip the dip switches on screen instead of on the back of the pedal: {dips.join(', ')}.</p>
+    </>
+  )}
+
+  {globals.length > 0 && <p><strong>Global settings:</strong> {globals.join(', ')}.</p>}
+
+  <h3>Presets and tools</h3>
+  <p>You can {features.join(', ')}. Presets stay in your browser; nothing is uploaded.</p>
+  <p>
+    Works in Chrome, Edge and Opera with any MIDI interface. See the <a href="/setup/">setup</a> and the{' '}
+    <a href="/guide/">guide</a> if you are new here.
+  </p>
+</section>
+
+<style>
+  .editor-about {
+    margin-top: clamp(2.5rem, 6vw, 4rem);
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+    max-width: 72ch;
+  }
+  .editor-about h2 {
+    font-size: 1.5rem;
+  }
+  .editor-about h3 {
+    font-size: 1.05rem;
+    margin-top: 1.5rem;
+  }
+</style>

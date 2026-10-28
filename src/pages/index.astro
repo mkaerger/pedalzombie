@@ -1,0 +1,104 @@
+---
+import Base from '../layouts/Base.astro';
+import PedalCard from '../components/PedalCard.astro';
+import SetupChain from '../components/SetupChain.astro';
+import { pedals } from '../pedals';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'pedalzombie',
+  url: Astro.site?.href,
+  description: 'Free Web MIDI editors for Chase Bliss pedals.',
+  author: { '@type': 'Person', name: 'Marco Kärger' },
+};
+---
+
+<Base
+  title="pedalzombie"
+  description="Free Web MIDI editors for Chase Bliss pedals: control every knob, toggle, dip switch and hidden option from your browser."
+  jsonLd={jsonLd}
+>
+  <section class="wrap hero">
+    <div>
+      <p class="eyebrow">Web MIDI editors</p>
+      <h1>Every knob, toggle and hidden option of your <span>Chase Bliss</span> pedal — on screen.</h1>
+      <p class="hero__lead">
+        Free editors that run in your browser. Plug in a MIDI interface, pick your pedal and explore: randomize sounds,
+        save presets, reach the dip switches without unscrewing anything.
+      </p>
+      <div class="hero__actions">
+        <a class="button button--primary" href="#editors">Choose your pedal</a>
+        <a class="button" href="/setup/">What do I need?</a>
+      </div>
+    </div>
+    <img class="hero__zombie" src="/img/zombie.svg" alt="" width="340" height="340" />
+  </section>
+
+  <section class="wrap" id="editors" aria-labelledby="editors-title">
+    <h2 id="editors-title">Editors</h2>
+    <div class="cards">
+      {pedals.map((pedal) => <PedalCard pedal={pedal} />)}
+    </div>
+  </section>
+
+  <section class="wrap how" aria-labelledby="how-title">
+    <h2 id="how-title">How it works</h2>
+    <SetupChain />
+    <p class="muted">
+      Your browser talks to the pedal through Web MIDI. Nothing is installed and nothing leaves your computer — presets are
+      saved in your browser. <a href="/setup/">Full setup guide →</a>
+    </p>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: 3rem;
+    padding-block: clamp(1rem, 6vw, 4rem) clamp(2.5rem, 8vw, 5rem);
+  }
+  .hero__zombie {
+    width: clamp(160px, 24vw, 340px);
+    height: auto;
+    transform: rotate(-6deg);
+    filter: drop-shadow(0 20px 50px rgb(110 200 170 / 0.25));
+  }
+  @media (max-width: 700px) {
+    .hero {
+      grid-template-columns: 1fr;
+    }
+    .hero__zombie {
+      order: -1;
+      width: 120px;
+      margin-bottom: 1rem;
+    }
+  }
+  .hero h1 {
+    max-width: 20ch;
+  }
+  .hero h1 span {
+    color: var(--brand);
+  }
+  .hero__lead {
+    max-width: 58ch;
+    font-size: 1.15rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 1rem;
+  }
+  .how {
+    margin-top: clamp(3rem, 8vw, 5rem);
+  }
+</style>

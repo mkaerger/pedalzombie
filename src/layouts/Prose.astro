@@ -1,0 +1,17 @@
+---
+import Base from './Base.astro';
+
+interface Props {
+  frontmatter: { title: string; description: string; eyebrow?: string };
+}
+
+const { title, description, eyebrow } = Astro.props.frontmatter;
+---
+
+<Base title={title} description={description}>
+  <article class="wrap prose">
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    <h1>{title}</h1>
+    <slot />
+  </article>
+</Base>

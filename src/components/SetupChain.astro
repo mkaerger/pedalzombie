@@ -1,0 +1,99 @@
+---
+/** The signal chain from computer to pedal, as an accessible ordered list. */
+const steps = [
+  { title: 'Computer', text: 'Chrome, Edge or Opera' },
+  { cable: 'USB' },
+  { title: 'Interface', text: 'with a MIDI out port' },
+  { cable: '5-pin MIDI' },
+  { title: 'MIDI → TRS adapter', text: 'e.g. Chase Bliss MIDIBox' },
+  { cable: '¼″ TRS' },
+  { title: 'Pedal', text: 'MIDI / tap jack' },
+];
+---
+
+<ol class="chain" aria-label="Setup: computer to pedal">
+  {
+    steps.map((s) =>
+      'cable' in s ? (
+        <li class="chain__cable">
+          <span>{s.cable}</span>
+        </li>
+      ) : (
+        <li class="chain__node">
+          <strong>{s.title}</strong>
+          <span>{s.text}</span>
+        </li>
+      ),
+    )
+  }
+</ol>
+
+<style>
+  .chain {
+    list-style: none;
+    margin: 1.5rem 0 2rem;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0;
+  }
+  .chain__node {
+    flex: 1 1 140px;
+    display: grid;
+    align-content: center;
+    gap: 2px;
+    padding: 0.9rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .chain__node strong {
+    font-family: var(--font-display);
+  }
+  .chain__node span {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .chain__cable {
+    flex: 0 1 auto;
+    display: grid;
+    place-items: center;
+    padding: 0.5rem 0.4rem;
+    min-width: 64px;
+    position: relative;
+  }
+  .chain__cable::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 2px dashed var(--brand);
+  }
+  .chain__cable span {
+    position: relative;
+    background: var(--bg);
+    color: var(--brand);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0 6px;
+    white-space: nowrap;
+  }
+  @media (max-width: 720px) {
+    .chain {
+      flex-direction: column;
+    }
+    .chain__cable {
+      min-height: 44px;
+    }
+    .chain__cable::before {
+      left: 50%;
+      right: auto;
+      top: 0;
+      bottom: 0;
+      border-top: 0;
+      border-left: 2px dashed var(--brand);
+    }
+  }
+</style>

@@ -1,0 +1,101 @@
+---
+/**
+ * Cookie consent: Google Analytics is only loaded after an explicit "Accept".
+ * The choice is stored in localStorage and can be changed via "Cookie settings".
+ */
+const GA_ID = 'G-28R7M1H0PX';
+---
+
+<div class="consent" role="dialog" aria-modal="false" aria-labelledby="consent-title" hidden data-consent>
+  <h2 id="consent-title">Analytics cookies?</h2>
+  <p>
+    I'd like to use Google Analytics to see which editors are used. It sets cookies and sends data to Google. Nothing
+    is loaded unless you agree. <a href="/privacy/">Privacy policy</a>
+  </p>
+  <div class="consent__actions">
+    <button type="button" class="button" data-consent-choice="denied">Decline</button>
+    <button type="button" class="button button--primary" data-consent-choice="granted">Accept</button>
+  </div>
+</div>
+
+<script is:inline define:vars={{ GA_ID }}>
+  (() => {
+    const KEY = 'pedalzombie:consent';
+    const banner = document.querySelector('[data-consent]');
+    const read = () => {
+      try {
+        return localStorage.getItem(KEY);
+      } catch {
+        return null;
+      }
+    };
+    const loadAnalytics = () => {
+      if (window.gtag) return;
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () {
+        window.dataLayer.push(arguments);
+      };
+      window.gtag('js', new Date());
+      window.gtag('config', GA_ID);
+      const s = document.createElement('script');
+      s.async = true;
+      s.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+      document.head.appendChild(s);
+    };
+    const choose = (choice) => {
+      try {
+        localStorage.setItem(KEY, choice);
+      } catch {}
+      banner.hidden = true;
+      if (choice === 'granted') loadAnalytics();
+      // revoking needs a reload so the already loaded script is gone
+      else if (window.gtag) location.reload();
+    };
+
+    const choice = read();
+    if (choice === 'granted') loadAnalytics();
+    else if (choice !== 'denied') banner.hidden = false;
+
+    banner.querySelectorAll('[data-consent-choice]').forEach((b) =>
+      b.addEventListener('click', () => choose(b.dataset.consentChoice)),
+    );
+    document.querySelectorAll('[data-consent-open]').forEach((b) =>
+      b.addEventListener('click', () => {
+        banner.hidden = false;
+        banner.querySelector('button').focus();
+      }),
+    );
+  })();
+</script>
+
+<style>
+  .consent {
+    position: fixed;
+    z-index: 50;
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+    max-width: 420px;
+    margin-left: auto;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.25rem 1rem;
+    box-shadow: 0 20px 60px rgb(0 0 0 / 0.5);
+  }
+  .consent[hidden] {
+    display: none;
+  }
+  .consent h2 {
+    font-size: 1.1rem;
+  }
+  .consent p {
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+  .consent__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+</style>

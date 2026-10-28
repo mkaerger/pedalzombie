@@ -1,0 +1,46 @@
+---
+layout: ../layouts/Prose.astro
+title: Requirements & setup
+description: What you need to control a Chase Bliss pedal from your browser via Web MIDI, and how to connect everything.
+eyebrow: Setup
+---
+import SetupChain from '../components/SetupChain.astro';
+
+You need four things: a supported browser, an interface with a MIDI output, a MIDI-to-TRS adapter and a TRS cable.
+
+<SetupChain />
+
+## What you need
+
+- **A browser that supports Web MIDI**, for example
+  - Chrome (recommended)
+  - Edge
+  - Opera
+
+  Safari and Firefox on iOS do not support Web MIDI.
+- **An audio or MIDI interface with a MIDI out port**, for example the
+  [UA Volt 2](https://www.uaudio.de/audio-interfaces/volt-2-usb.html).
+- **A MIDI-to-TRS adapter**, for example
+  - [Chase Bliss MIDIBox](https://www.chasebliss.eu/shoputility/p/midibox)
+  - [Disaster Area MIDI Box](https://www.disasterareadesigns.com/shop/p/midi-box-4)
+  - [Meris MIDI I/O](https://www.meris.us/product/midi-i-o/)
+- **A TRS cable** from the adapter to the MIDI jack of your pedal.
+
+Older pedals such as the Warped Vinyl MKII use the "ring active" wiring. Check the pedal's MIDI manual if your adapter
+has a tip/ring switch.
+
+## Connect your pedal
+
+1. Plug everything in and open the editor for your pedal.
+2. Click **Connect MIDI** and allow MIDI access when the browser asks.
+3. Choose your interface under **Output**. The editor remembers it next time.
+4. Choose the **MIDI channel** of your pedal. Most Chase Bliss pedals ship on channel 2, Warped Vinyl MKII on
+   channel 5. To change the pedal's channel, hold both footswitches while powering it up — it then adopts the channel
+   of the first program change it receives.
+
+Having trouble? These videos help:
+
+- [MIDI Unscripted: how to connect any kind of MIDI device to a Chase Bliss pedal](https://youtu.be/vQM1XgCoUxY)
+- [Set or change the MIDI channel of your Chase Bliss pedal](https://youtu.be/rXyTtVl3ED4)
+
+Next: [how to use the editor](/guide/).

@@ -1,0 +1,19 @@
+# Apache config for Strato (static hosting)
+ErrorDocument 404 /404.html
+DirectoryIndex index.html
+
+# Old URLs of the legal pages
+Redirect 301 /impressum/ /legal/
+Redirect 301 /datenschutz/ /privacy/
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

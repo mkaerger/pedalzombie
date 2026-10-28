@@ -1,0 +1,96 @@
+---
+import type { PedalDefinition } from '../editor/core/types';
+
+interface Props {
+  pedal: PedalDefinition;
+}
+
+const { pedal } = Astro.props;
+const { theme } = pedal;
+const style = `--body:${theme.body};--ink:${theme.ink};--knob:${theme.knob};--accent:${theme.accent}`;
+---
+
+<a class="card" href={`/${pedal.slug}/`} style={style}>
+  <div class="card__pedal" aria-hidden="true">
+    <div class="card__knobs">
+      {Array.from({ length: 6 }, () => <span />)}
+    </div>
+    <span class="card__name">{pedal.name}</span>
+    <div class="card__feet"><span /><span /></div>
+  </div>
+  <div class="card__text">
+    <h3>{pedal.name}</h3>
+    <p>{pedal.tagline}</p>
+    <span class="card__cta">Open editor →</span>
+  </div>
+</a>
+
+<style>
+  .card {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    gap: 1.25rem;
+    padding: 1.1rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .card__pedal {
+    display: grid;
+    align-content: space-between;
+    gap: 8px;
+    aspect-ratio: 0.62;
+    padding: 12px 10px 10px;
+    border-radius: 12px;
+    background: radial-gradient(120% 70% at 20% 0%, rgb(255 255 255 / 0.18), transparent 60%), var(--body);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 12px 24px -10px rgb(0 0 0 / 0.7);
+  }
+  .card__knobs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .card__knobs span {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--knob);
+    box-shadow: 0 2px 3px rgb(0 0 0 / 0.3);
+  }
+  .card__name {
+    text-align: center;
+    color: var(--ink);
+    font: 700 0.62rem/1.1 var(--font-display);
+    letter-spacing: 0.12em;
+  }
+  .card__feet {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 4px;
+  }
+  .card__feet span {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #f4f4f4, #8b8b90);
+  }
+  .card__text h3 {
+    margin: 0.2rem 0 0.4rem;
+    font-size: 1.3rem;
+  }
+  .card__text p {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .card__cta {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--accent);
+  }
+</style>

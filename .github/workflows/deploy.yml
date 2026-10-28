@@ -1,0 +1,88 @@
+# Build, test and deploy pedalzombie.com.
+#
+# Push / pull request: test + build only (CI).
+# Manual run (Actions → Deploy → Run workflow): test + build, then upload dist/ to the
+# Strato web root via SFTP. Deploys never happen automatically.
+#
+# Required repository secrets: SFTP_HOST, SFTP_USER, SFTP_PASSWORD.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run check
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: dist
+          include-hidden-files: true # .htaccess
+          retention-days: 3
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-live
+      cancel-in-progress: false
+    environment:
+      name: live
+      url: https://pedalzombie.com
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: dist
+
+      - name: Install lftp
+        run: sudo apt-get update -q && sudo apt-get install -y -q lftp
+
+      - name: Pin the server's SSH host key
+        # Hashed known_hosts entry of the Strato SFTP host (ed25519, SHA256:1gx2w8Rtv3wCgi7Jh8myf/KVd72cRQbow03UP8P095Q)
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo '|1|E7TvJni5J4NGsjeNKVEhxWclwMg=|wlNrke2i6J1KVLvit+ZwC2/PTQI= ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINbBMvvDjN4IP04VAZlDH42A+HL25ifeIK9CorAvaMA/' >> ~/.ssh/known_hosts
+
+      - name: Upload to the web root
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${SFTP_HOST:?secret missing}" "${SFTP_USER:?secret missing}" "${SFTP_PASSWORD:?secret missing}"
+          {
+            echo 'set sftp:connect-program "ssh -a -x -o StrictHostKeyChecking=yes"'
+            echo 'set net:max-retries 3'
+            echo 'set net:timeout 60'
+            echo 'set cmd:fail-exit yes'
+            echo "open -u \"$SFTP_USER\",\"$SFTP_PASSWORD\" sftp://$SFTP_HOST"
+            # 1. upload everything (new files win, nothing on the server is deleted)
+            echo 'mirror -R --verbose=1 dist/ /'
+            # 2. inside the folders this build owns, remove files left over from older builds
+            for dir in dist/*/; do
+              name="$(basename "$dir")"
+              echo "mirror -R --delete --verbose=1 dist/$name /$name"
+            done
+            echo 'bye'
+          } > lftp.cmds
+          lftp -f lftp.cmds
+          rm -f lftp.cmds

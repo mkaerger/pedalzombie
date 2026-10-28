@@ -1,0 +1,50 @@
+---
+layout: ../layouts/Prose.astro
+title: Using the editor
+description: How the pedalzombie editors work — knobs, alt controls, dip switches, randomize, presets and the MIDI monitor.
+eyebrow: Guide
+---
+
+The editor is a remote control for your pedal. Every change you make on screen is sent to the pedal as a MIDI message,
+so you hear it immediately.
+
+**One thing to know first:** Chase Bliss pedals receive MIDI but don't send their state back. If you turn a knob on
+the pedal itself, the editor doesn't notice. Use **Sync pedal** to send the editor's complete state to the pedal at
+any time.
+
+## The pedal
+
+- **Knobs:** drag up and down, scroll while a knob is focused, or use the arrow keys (hold Shift for fine steps).
+  Double-click resets a knob to its default.
+- **Toggles:** click a position. Some knob labels follow the toggles, just like on the pedal — for example the
+  MOOD MKII shows what TIME and MODIFY do in the selected wet channel.
+- **Footswitches:** click to switch, press and hold for the hold function (e.g. freeze and overdub on the
+  MOOD MKII). The LEDs mimic the pedal.
+- **Preset toggle:** left and right recall the pedal's two toggle presets, the middle position is live mode.
+
+## Alt controls, hidden options and dip switches
+
+Everything that is normally hidden behind both footswitches or the dip switches on the side of the pedal is right
+there: alt knobs, hidden toggles, both dip switch banks and clock divisions. Some of these settings are stored
+globally on the pedal — the editor marks them.
+
+## Tools
+
+- **Randomize** sends random settings for knobs, toggles, alt controls, ramping, or everything. A great way to find
+  new sounds.
+- **Editor defaults** brings everything back to the state the editor started with.
+- **Tap** sends tap tempo to the pedal. Pedals that support it also accept a BPM value.
+- **Factory reset** and **MIDI reset** (only where the pedal supports them) send the reset command to the pedal.
+
+## Presets
+
+- **In this browser:** give a preset a name and click **Save**. Click a preset to load it. Presets live in your
+  browser's local storage — they stay until you clear the site data, and they are not shared between browsers.
+- **On the pedal:** recall any of the 122 preset slots with a program change. Pedals with a MIDI save command
+  (MOOD MKII, Generation Loss MKII) can store the current sound into a slot directly. On the others, hold both
+  footswitches on the pedal and press **Recall** to save.
+
+## MIDI monitor
+
+Open the **MIDI monitor** below the pedal to see every message the editor sends. Handy if something doesn't react as
+expected.

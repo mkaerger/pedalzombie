@@ -1,0 +1,72 @@
+---
+import Base from '../layouts/Base.astro';
+import Editor from '../editor/ui/Editor';
+import EditorAbout from '../components/EditorAbout.astro';
+import { pedals } from '../pedals';
+import type { PedalDefinition } from '../editor/core/types';
+
+export function getStaticPaths() {
+  return pedals.map((pedal) => ({ params: { editor: pedal.slug }, props: { slug: pedal.slug } }));
+}
+
+const pedal = pedals.find((p) => p.slug === Astro.props.slug) as PedalDefinition;
+const description = `Free Web MIDI editor for the ${pedal.manufacturer} ${pedal.name}. ${pedal.tagline}`;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: `${pedal.name} editor`,
+  description,
+  url: new URL(`/${pedal.slug}/`, Astro.site).href,
+  applicationCategory: 'MultimediaApplication',
+  operatingSystem: 'Web browser (Chrome, Edge, Opera)',
+  browserRequirements: 'Requires Web MIDI',
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+  author: { '@type': 'Person', name: 'Marco Kärger' },
+  publisher: { '@type': 'Organization', name: 'pedalzombie', url: Astro.site?.href },
+};
+---
+
+<Base title={`${pedal.name} editor`} description={description} jsonLd={jsonLd} wide>
+  <div class="wrap">
+    <header class="editor-head">
+      <div>
+        <p class="eyebrow">{pedal.manufacturer} · Web MIDI editor</p>
+        <h1>{pedal.name}</h1>
+      </div>
+      <p class="muted">
+        New here? Read the <a href="/setup/">setup</a> and the <a href="/guide/">guide</a>. Works in Chrome, Edge and Opera.
+      </p>
+    </header>
+    <Editor client:only="react" slug={pedal.slug}>
+      <div slot="fallback" class="editor-loading">Loading editor…</div>
+    </Editor>
+    <noscript><p>The editor needs JavaScript.</p></noscript>
+    <EditorAbout pedal={pedal} />
+  </div>
+</Base>
+
+<style>
+  .editor-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: 0.5rem 2rem;
+    margin-bottom: 1.25rem;
+  }
+  .editor-head h1 {
+    margin: 0;
+  }
+  .editor-head p:last-child {
+    margin: 0;
+    max-width: 42ch;
+    font-size: 0.92rem;
+  }
+  .editor-loading {
+    min-height: 60vh;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+  }
+</style>

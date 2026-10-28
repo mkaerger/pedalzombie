@@ -1,0 +1,23 @@
+#!/usr/bin/expect -f
+# Runs sftp commands from a file. Password comes from $SFTP_PASS (never from argv).
+# usage: sftp.exp <user@host> <commands-file>
+set timeout 900
+set pw $env(SFTP_PASS)
+set f [open [lindex $argv 1]]
+set cmds [split [string trim [read $f]] "\n"]
+close $f
+log_user 0
+spawn sftp -o PubkeyAuthentication=no [lindex $argv 0]
+expect {
+  -re "(?i)password:" { send -- "$pw\r" }
+  timeout { puts stderr "sftp: timeout while connecting"; exit 1 }
+}
+foreach c $cmds {
+  expect {
+    "sftp>" { send -- "$c\r"; puts "sftp> $c" }
+    -re "(?i)denied" { puts stderr "sftp: authentication failed"; exit 2 }
+    timeout { puts stderr "sftp: timeout"; exit 1 }
+  }
+}
+expect "sftp>" { send "bye\r" }
+expect eof

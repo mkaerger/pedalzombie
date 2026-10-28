@@ -1,0 +1,208 @@
+---
+import '../styles/global.css';
+import Consent from '../components/Consent.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Wide layout for editors. */
+  wide?: boolean;
+  /** Structured data (schema.org) for this page. */
+  jsonLd?: Record<string, unknown>;
+}
+
+const { title, description, wide = false, jsonLd } = Astro.props;
+const fullTitle = title === 'pedalzombie' ? 'pedalzombie — MIDI editors for Chase Bliss pedals' : `${title} · pedalzombie`;
+const path = Astro.url.pathname;
+const canonical = new URL(path, Astro.site);
+const ogImage = new URL('/og.png', Astro.site);
+
+const nav = [
+  { href: '/', label: 'Editors' },
+  { href: '/setup/', label: 'Setup' },
+  { href: '/guide/', label: 'Guide' },
+  { href: '/about/', label: 'About' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="facebook-domain-verification" content="gntfnghmsnhwp23np6ovniill0pl5q" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="pedalzombie" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0e0e11" />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap site-header__inner">
+        <a class="logo" href="/" aria-label="pedalzombie home">
+          <img class="logo__mark" src="/img/zombie.svg" alt="" width="30" height="30" />
+          pedalzombie
+        </a>
+        <nav aria-label="Main">
+          <ul>
+            {
+              nav.map((item) => (
+                <li>
+                  <a href={item.href} aria-current={path === item.href ? 'page' : undefined}>
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class:list={['site-main', { 'site-main--wide': wide }]}>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap site-footer__inner">
+        <p>
+          Independent fan project — not affiliated with Chase Bliss. Made in Munich by <a href="/about/">Marco</a>.
+        </p>
+        <ul>
+          <li><a href="/legal/">Legal notice</a></li>
+          <li><a href="/privacy/">Privacy</a></li>
+          <li><button type="button" class="link-button" data-consent-open>Cookie settings</button></li>
+        </ul>
+      </div>
+    </footer>
+
+    <Consent />
+  </body>
+</html>
+
+<style>
+  .skip {
+    position: absolute;
+    left: -9999px;
+  }
+  .skip:focus {
+    left: 1rem;
+    top: 1rem;
+    z-index: 100;
+    background: var(--brand);
+    color: var(--brand-ink);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 64px;
+    flex-wrap: wrap;
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font: 700 1.15rem/1 var(--font-display);
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+  .logo__mark {
+    display: block;
+  }
+  nav ul {
+    display: flex;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+  }
+  nav a {
+    display: block;
+    padding: 0.5rem 0.8rem;
+    border-radius: 999px;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+  nav a:hover {
+    color: var(--text);
+  }
+  nav a[aria-current='page'] {
+    color: var(--text);
+    background: var(--surface-2);
+  }
+
+  .site-main {
+    min-height: 70vh;
+    padding: clamp(2rem, 6vw, 4rem) 0;
+  }
+  .site-main--wide {
+    padding-top: 1.5rem;
+  }
+
+  .site-footer {
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .site-footer__inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-block: 2rem;
+  }
+  .site-footer p {
+    margin: 0;
+  }
+  .site-footer ul {
+    display: flex;
+    gap: 1.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .site-footer a,
+  .link-button {
+    color: var(--muted);
+  }
+  .link-button {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+</style>
