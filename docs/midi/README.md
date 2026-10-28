@@ -24,6 +24,7 @@ Common to all pedals covered here:
 | Onward | [onward.md](onward.md) | 2 | Onward_MIDI-Manual (2024) |
 | Lost + Found | [lost-found.md](lost-found.md) | 2 | Lost-Found_MIDI-Manual (2025) |
 | Blooper | [blooper.md](blooper.md) | 2 | Blooper_MIDIManual (2019; loops are PC 0–15) |
+| BAD MOOD | [bad-mood.md](bad-mood.md) | 2 | BAD-MOOD_MIDI-Manual (Small Batch Bliss 2026, BAD1.1) |
 
 ## Corrections vs. the 2023 editors
 

@@ -53,6 +53,21 @@ export const beatMs = (bpm: number) => (bpm > 0 ? Math.round(60000 / bpm) : unde
  */
 export const knobBlinkMs = (v: number) => Math.max(80, Math.round((476.66 * v) / 20));
 
+/** Stepped CLOCK knob (CC18) of MOOD MKII and BAD MOOD: sample rate in kHz. */
+export const STEPPED_CLOCK: ValueRange[] = [
+  { from: 0, to: 4, label: '2k' },
+  { from: 5, to: 16, label: '3k' },
+  { from: 17, to: 28, label: '4k' },
+  { from: 29, to: 40, label: '6k' },
+  { from: 41, to: 53, label: '8k' },
+  { from: 54, to: 69, label: '12k' },
+  { from: 70, to: 83, label: '16k' },
+  { from: 84, to: 95, label: '24k' },
+  { from: 96, to: 109, label: '32k' },
+  { from: 110, to: 121, label: '48k' },
+  { from: 122, to: 127, label: '64k' },
+];
+
 /** Ramping waveform knob (CC25) on the newer pedals; images live in each pedal's asset folder. */
 export const RAMP_WAVEFORMS: ValueRange[] = [
   { from: 0, to: 14, label: 'Triangle', image: 'waveform-0-14.png' },

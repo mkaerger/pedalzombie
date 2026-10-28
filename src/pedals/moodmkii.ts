@@ -1,6 +1,6 @@
 import { dip, fader, knob, rangeOf, select, toggle } from '../editor/core/controls';
 import type { LedState, Option, PedalDefinition, ValueRange } from '../editor/core/types';
-import { customizeDips, dipsSection, LED_OFF, presetLed, RAMP_WAVEFORMS, rampingDips } from './shared';
+import { customizeDips, dipsSection, LED_OFF, presetLed, RAMP_WAVEFORMS, rampingDips, STEPPED_CLOCK } from './shared';
 
 // Reference: docs/midi/mood-mkii.md
 
@@ -61,7 +61,7 @@ export const moodmkii: PedalDefinition = {
     knob('k2', 'MIX', 15, 58),
     knob('k3', 'LENGTH', 16, 75, { detail: byLoop(['Slice size', 'Loop length', 'Slice size']) }),
     knob('k4', 'MODIFY', 17, 58, { detail: byWet(['Smear', 'Feedback', 'Speed & direction']) }),
-    knob('k5', 'CLOCK', 18, 70),
+    knob('k5', 'CLOCK', 18, 70, { readout: (value) => rangeOf(STEPPED_CLOCK, value) }),
     knob('k6', 'MODIFY', 19, 58, {
       detail: byLoop(['Sensitivity', 'Speed & direction', 'Amount & direction']),
       readout: (value, v) => (v.t3 === 2 ? rangeOf(TAPE_SPEED, value) : v.t3 === 3 ? rangeOf(STRETCH_SPEED, value) : undefined),

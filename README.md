@@ -6,6 +6,7 @@ save presets, store them on the pedal. No install, no account, nothing leaves yo
 
 | Pedal | Editor |
 |---|---|
+| BAD MOOD | [/badmood-editor/](https://pedalzombie.com/badmood-editor/) |
 | Lost + Found | [/lostfound-editor/](https://pedalzombie.com/lostfound-editor/) |
 | Onward | [/onward-editor/](https://pedalzombie.com/onward-editor/) |
 | Clean | [/clean-editor/](https://pedalzombie.com/clean-editor/) |

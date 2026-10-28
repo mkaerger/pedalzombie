@@ -131,3 +131,15 @@ Start: `npm run build && npm run preview`, open the editor in Chrome, **Connect 
 - [ ] Sync pedal / editor defaults / preset load never send CC1–9, CC30, CC31
 - [ ] **Loops are zero-based:** Recall loop 1 sends PC 0, loop 16 sends PC 15. Save: hold the right footswitch, press Recall
 - [ ] MIDI clock CC51, ramping CC52, note division CC54 (0–7)
+
+## BAD MOOD
+
+- [ ] Knobs CC14–19, ramp speed CC20; toggles Soup/Relay/Flip (CC21), In / loop+In / loop (CC22), Burst/Radio/Mask (CC23)
+- [ ] Wet footswitch: click = CC103, hold = freeze (CC105); loop footswitch: click = CC102, hold = overdub (CC106)
+- [ ] **Flip chords:** with the wet channel in Flip, the MODIFY readout names the chord (1–48) — compare a few
+      values against what you hear (e.g. 0 = -Oct, 127 = four notes)
+- [ ] **Radio stations:** loop MODIFY readout (Tape / Ambient / Orchestral / Shoegaze / Dance) — the manual gives
+      single values, the range boundaries are the editor's midpoints
+- [ ] Hidden options CC24–30, sync CC31, spread CC32, cross input CC33; EQ per channel CC85
+- [ ] Clock divisions CC53/54 = 0–8 (double whole = 8), MIDI clock CC51, stop ramping CC52, true bypass CC55
+- [ ] Store CC111, factory reset CC56, MIDI reset CC110; tap CC93

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cc, MemoryStorage, pc, setup } from '../../editor/core/__tests__/helpers';
 import { PresetStore } from '../../editor/core/presets';
+import { badmood, FLIP_CHORDS } from '../badmood';
 import { blooper } from '../blooper';
 import { brothersam } from '../brothersam';
 import { clean } from '../clean';
@@ -491,5 +492,48 @@ describe('Blooper', () => {
     engine.presetToggle('middle');
     expect(sink.take()).toEqual([pc(0), pc(15)]);
     expect(engine.recallRange.label).toBe('Loop');
+  });
+});
+
+describe('BAD MOOD', () => {
+  it('footswitches mirror MOOD MKII: wet left (CC103, hold freeze CC105), loop right (CC102, hold overdub CC106)', () => {
+    const { engine, sink, advance } = setup(badmood);
+    click(engine, 's2');
+    hold(engine, advance, 's2');
+    click(engine, 's1');
+    hold(engine, advance, 's1');
+    expect(sink.take()).toEqual([cc(103, 0), cc(105, 1), cc(105, 0), cc(102, 1), cc(106, 1), cc(106, 0)]);
+  });
+
+  it('names the Flip chord on the wet MODIFY knob and the radio station on the loop MODIFY knob', () => {
+    const { engine } = setup(badmood);
+    const readout = (id: string, v: number) => {
+      const c = engine.control(id);
+      return c?.kind === 'knob' ? c.readout?.(v, engine.getState().values)?.label : undefined;
+    };
+    expect(readout('k4', 64)).toBeUndefined(); // Soup: no chords
+    engine.set('t1', 3); // Flip
+    expect(readout('k4', 0)).toBe('Chord 1 · -Oct');
+    expect(readout('k4', 17)).toBe('Chord 7 · -Oct -5th');
+    expect(readout('k4', 107)).toBe('Chord 41 · -Oct -5th -4th +4th');
+    expect(readout('k4', 127)).toBe('Chord 48 · +4th +Oct -Oct -4th');
+    expect(readout('k6', 63)).toBe('Orchestral'); // Radio is the default looper mode
+    expect(readout('k5', 127)).toBe('64k');
+  });
+
+  it('has 48 contiguous chord ranges covering 0–127', () => {
+    expect(FLIP_CHORDS).toHaveLength(48);
+    expect(FLIP_CHORDS[0].from).toBe(0);
+    expect(FLIP_CHORDS[47].to).toBe(127);
+    for (let i = 1; i < FLIP_CHORDS.length; i++) expect(FLIP_CHORDS[i].from).toBe(FLIP_CHORDS[i - 1].to + 1);
+  });
+
+  it('clock divisions go up to double whole (8), EQ per channel on CC85, tap on CC93', () => {
+    const { engine, sink } = setup(badmood);
+    engine.set('c1', 8);
+    engine.set('c2', 0);
+    engine.set('h4', 3);
+    engine.tap();
+    expect(sink.take()).toEqual([cc(53, 8), cc(54, 0), cc(85, 3), cc(93, 127)]);
   });
 });

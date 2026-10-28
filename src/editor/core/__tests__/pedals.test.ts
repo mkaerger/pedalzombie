@@ -27,6 +27,7 @@ const NOT_SENT: Record<string, number[]> = {
   'lossy-editor': [100, 104],
   'lostfound-editor': [100, 104],
   'blooper-editor': [11, 100], // 11 = multi-control; the editor uses the individual transport CCs
+  'badmood-editor': [100, 104],
 };
 
 /** Every CC the editor can send for a pedal. */
