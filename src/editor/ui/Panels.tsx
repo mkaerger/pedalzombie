@@ -274,6 +274,9 @@ export function PresetsPanel() {
   );
 }
 
+/** One formatter for the monitor: toLocaleTimeString builds a new one per call, 30× per render. */
+const TIME = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
 export function MidiMonitor() {
   const { log } = useMidiState();
   return (
@@ -285,7 +288,7 @@ export function MidiMonitor() {
         <ol>
           {log.map((e) => (
             <li key={e.id}>
-              <time>{new Date(e.at).toLocaleTimeString()}</time> {e.text}
+              <time>{TIME.format(e.at)}</time> {e.text}
             </li>
           ))}
         </ol>
