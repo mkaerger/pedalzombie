@@ -54,7 +54,7 @@ const nav = [
       <div class="wrap site-header__inner">
         <a class="logo" href="/" aria-label="pedalzombie home">
           <img class="logo__mark" src="/img/zombie.svg" alt="" width="30" height="30" />
-          pedalzombie
+          <span>pedal<b>zombie</b></span>
         </a>
         <nav aria-label="Main">
           <ul>
@@ -132,6 +132,10 @@ const nav = [
     color: var(--text);
     text-decoration: none;
     letter-spacing: -0.02em;
+  }
+  .logo b {
+    font-weight: inherit;
+    color: var(--brand);
   }
   .logo__mark {
     display: block;

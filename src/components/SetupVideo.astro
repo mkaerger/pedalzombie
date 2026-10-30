@@ -1,0 +1,48 @@
+---
+/** 30-second setup walkthrough above the text: what plugs into what, then the editor. Silent, so it can loop. */
+---
+
+<figure class="setup-video">
+  <video
+    src="/video/setup-30s.mp4"
+    poster="/video/setup-30s.jpg"
+    width="1920"
+    height="1080"
+    muted
+    loop
+    playsinline
+    controls
+    preload="metadata"
+    aria-label="Setup in 30 seconds: MIDI path from computer to pedal, audio path from instrument to amp, then the editor"
+  ></video>
+  <figcaption>30 seconds: what plugs into what, then the editor. No sound.</figcaption>
+</figure>
+
+<script>
+  // Autoplay only when the visitor hasn't asked for reduced motion; the controls stay either way.
+  const video = document.querySelector<HTMLVideoElement>('.setup-video video');
+  if (video && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    video.autoplay = true;
+    video.play().catch(() => {});
+  }
+</script>
+
+<style>
+  .setup-video {
+    margin: 1.5rem 0 2.5rem;
+  }
+  .setup-video video {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .setup-video figcaption {
+    margin-top: 0.6rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+</style>
