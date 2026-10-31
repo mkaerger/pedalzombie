@@ -98,6 +98,7 @@ export function PedalFace() {
   const { face, name, presets } = engine.pedal;
   const leds = engine.pedal.leds(state);
   const buttonLeds = engine.pedal.buttonLeds?.(state) ?? [];
+  if (face.format !== 'classic') return null;
 
   return (
     <section className="pedal" aria-label={`${name} controls`}>

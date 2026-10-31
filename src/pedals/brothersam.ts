@@ -48,6 +48,7 @@ export const brothersam: PedalDefinition = {
   ],
 
   face: {
+    format: 'classic',
     knobs: [
       ['k1', 'k2', 'k3'],
       ['k4', 'k5', 'k6'],

@@ -63,9 +63,10 @@ export function SectionPanel({ section }: { section: Section }) {
   );
 }
 
-/** Buttons for one-shot commands; those with `confirm` ask first. */
+/** Buttons for one-shot commands; those with `confirm` ask first, those with `enabled` grey out. */
 function CommandButtons({ ids }: { ids: string[] }) {
   const { engine } = useEditor();
+  const { values } = useEngineState();
   const commands = (engine.pedal.commands ?? []).filter((c) => ids.includes(c.id));
   return (
     <div className="button-row">
@@ -74,6 +75,8 @@ function CommandButtons({ ids }: { ids: string[] }) {
           key={c.id}
           type="button"
           className={c.confirm ? 'button button--danger' : 'button'}
+          disabled={c.enabled ? !c.enabled(values) : false}
+          title={c.hint}
           onClick={() => (!c.confirm || window.confirm(c.confirm)) && engine.command(c.id)}
         >
           {c.label}
@@ -249,6 +252,7 @@ export function PresetsPanel() {
             <span>{recall.label ?? 'Slot'}</span>
             <input type="number" min={recall.first} max={recall.last} value={slot} onChange={(e) => setSlot(Number(e.target.value))} />
           </label>
+          {recall.format && <span className="hint">{recall.format(slot)}</span>}
           <button type="button" className="button" onClick={() => engine.recall(slot)}>
             Recall
           </button>

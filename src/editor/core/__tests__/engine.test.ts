@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dip, knob, toggle, value } from '../controls';
+import { dip, knob, select, toggle, value } from '../controls';
 import type { ControlValues, PedalDefinition } from '../types';
 import { cc, pc, setup } from './helpers';
 
@@ -24,6 +24,7 @@ const pedal: PedalDefinition = {
     value('bpm', 'Tempo', 120, { min: 20, max: 300 }),
   ],
   face: {
+    format: 'classic',
     knobs: [['k1', 'k2']],
     toggles: ['t1'],
     footswitches: [
@@ -339,5 +340,71 @@ describe('EditorEngine pedal preset edge cases', () => {
     const without = setup(plain);
     expect(without.engine.store(1)).toBe(false);
     expect(without.sink.take()).toEqual([]);
+  });
+});
+
+/** Automatone-style pedal: no live state, 0-based slots, footswitches that depend on a mode button. */
+const automatone: PedalDefinition = {
+  ...pedal,
+  presets: { toggle: false, store: { cc: 27, minSlot: 0, maxSlot: 29 }, recall: { first: 0, last: 29, program: (s) => s, label: 'Preset' } },
+  controls: [...pedal.controls, select('mode', 'MODE', 24, 0, [{ value: 0, label: 'Delay' }, { value: 3, label: 'Loop' }])],
+  face: {
+    ...pedal.face,
+    footswitches: [
+      {
+        id: 'left',
+        label: 'Tap',
+        labelFor: (v) => (v.mode === 3 ? 'Record' : undefined),
+        press: { type: 'by', action: (v) => (v.mode === 3 ? { type: 'command', id: 'rec' } : { type: 'tap' }) },
+        hold: { type: 'by', action: (v) => (v.mode === 3 ? { type: 'command', id: 'delete' } : { type: 'momentary', cc: 106, on: 1, off: 0 }), label: 'Hold' },
+      },
+      { id: 'right', label: 'Bypass', press: { type: 'toggle', control: 's1' } },
+    ],
+  },
+  commands: [
+    { id: 'rec', label: 'Record', cc: 104, value: 127, enabled: (v) => v.mode === 3 },
+    { id: 'delete', label: 'Delete', cc: 106, value: 127, enabled: (v) => v.mode === 3 },
+  ],
+};
+
+describe('EditorEngine value-dependent footswitches and commands', () => {
+  it('resolves `by` actions with the values at press time, for click and hold', () => {
+    const { engine, sink, advance } = setup(automatone);
+    engine.pressStart('left');
+    engine.pressEnd('left');
+    expect(sink.take()).toEqual([cc(93, 127)]); // delay mode: tap
+    engine.pressStart('left');
+    advance(700);
+    engine.pressEnd('left');
+    expect(sink.take()).toEqual([cc(106, 1), cc(106, 0)]); // delay mode: momentary hold
+
+    engine.set('mode', 3);
+    sink.take();
+    engine.pressStart('left');
+    engine.pressEnd('left');
+    engine.pressStart('left');
+    advance(700);
+    engine.pressEnd('left');
+    expect(sink.take()).toEqual([cc(104, 127), cc(106, 127)]); // loop mode: record, delete
+  });
+
+  it('commands with `enabled` do nothing while disabled', () => {
+    const { engine, sink } = setup(automatone);
+    engine.command('rec');
+    expect(sink.take()).toEqual([]);
+    engine.set('mode', 3);
+    sink.take();
+    engine.command('rec');
+    expect(sink.take()).toEqual([cc(104, 127)]);
+  });
+
+  it('stores and recalls slot 0 when the pedal has no live state', () => {
+    const { engine, sink } = setup(automatone);
+    expect(engine.store(0)).toBe(true);
+    engine.recall(0);
+    engine.recall(29);
+    engine.recall(30);
+    expect(sink.take()).toEqual([cc(27, 0), pc(0), pc(29)]);
+    expect(engine.getState().preset).toEqual({ kind: 'recall', slot: 29, flip: true });
   });
 });

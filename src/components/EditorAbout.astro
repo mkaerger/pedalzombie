@@ -14,13 +14,17 @@ const byId = new Map(pedal.controls.map((c) => [c.id, c]));
 const label = (id: string) => byId.get(id)?.label ?? id;
 const unique = (xs: string[]) => [...new Set(xs)];
 
-const faceKnobs = unique(pedal.face.knobs.flat().map(label));
-const toggles = pedal.face.toggles
-  .map((id) => byId.get(id))
-  .filter((c): c is Extract<Control, { kind: 'toggle' }> => c?.kind === 'toggle')
-  .map((c) => `${c.label} (${c.options.map((o) => o.label).join(' / ')})`);
-const footswitches = pedal.face.footswitches.map((f) => (f.hold ? `${f.label} — hold: ${f.hold.label}` : f.label));
-const buttons = (pedal.face.buttons ?? []).map(label);
+const { face } = pedal;
+const withOptions = (ids: string[]) =>
+  ids
+    .map((id) => byId.get(id))
+    .filter((c): c is Extract<Control, { kind: 'toggle' | 'arcade' }> => c?.kind === 'toggle' || c?.kind === 'arcade')
+    .map((c) => `${c.label} (${c.options.map((o) => o.label).join(' / ')})`);
+const automatone = face.format === 'automatone';
+const faceKnobs = unique(face.format === 'classic' ? face.knobs.flat().map(label) : face.faders.map(label));
+const toggles = face.format === 'classic' ? withOptions(face.toggles) : withOptions(face.buttons);
+const footswitches = face.footswitches.map((f) => (f.hold ? `${f.label} — hold: ${f.hold.label}` : f.label));
+const buttons = face.format === 'classic' ? (face.buttons ?? []).map(label) : [];
 const commands = (pedal.commands ?? []).map((c) => c.label);
 
 const sectionControls = (match: (id: string) => boolean) =>
@@ -37,7 +41,7 @@ const dips = unique(
 
 const features = [
   pedal.presets.store
-    ? 'store and recall presets in the pedal’s 122 slots'
+    ? `store and recall presets in the pedal’s ${pedal.presets.store.maxSlot - pedal.presets.store.minSlot + 1} slots`
     : 'recall the presets stored on the pedal',
   'save your own presets in the browser',
   pedal.tap ? (pedal.tap.bpmControl ? 'set the tempo by tapping or typing a BPM' : 'tap the tempo') : '',
@@ -56,8 +60,8 @@ const features = [
 
   <h3>On the pedal</h3>
   <ul>
-    <li><strong>Knobs:</strong> {faceKnobs.join(', ')}</li>
-    {toggles.length > 0 && <li><strong>Toggles:</strong> {toggles.join('; ')}</li>}
+    <li><strong>{automatone ? 'Faders' : 'Knobs'}:</strong> {faceKnobs.join(', ')}</li>
+    {toggles.length > 0 && <li><strong>{automatone ? 'Buttons' : 'Toggles'}:</strong> {toggles.join('; ')}</li>}
     <li><strong>Footswitches:</strong> {footswitches.join('; ')}</li>
     {buttons.length > 0 && <li><strong>Buttons on the edge:</strong> {buttons.join(', ')}</li>}
   </ul>

@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { bounds, defaults, messagesFor } from '../controls';
+import { bounds, defaults, faceControlIds, hasOptions, messagesFor } from '../controls';
 import { pedals } from '../../../pedals';
-import type { PedalDefinition } from '../types';
+import type { FootswitchAction, PedalDefinition } from '../types';
 
 const ROOT = fileURLToPath(new URL('../../../../', import.meta.url));
 const HEX = /^#[0-9a-f]{6}$/i;
@@ -30,6 +30,23 @@ const NOT_SENT: Record<string, number[]> = {
   'badmood-editor': [100, 104],
 };
 
+/**
+ * Every concrete footswitch action, incl. each branch a `by` action can take:
+ * probed with the defaults and with every option of every option control set in turn.
+ */
+function footswitchActions(pedal: PedalDefinition): FootswitchAction[] {
+  const base = defaults(pedal);
+  const probes = [base, ...pedal.controls.flatMap((c) => (hasOptions(c) ? c.options.map((o) => ({ ...base, [c.id]: o.value })) : []))];
+  const out: FootswitchAction[] = [];
+  const visit = (a: FootswitchAction | undefined) => {
+    if (!a) return;
+    if (a.type === 'by') for (const p of probes) visit(a.action(p));
+    else out.push(a);
+  };
+  for (const f of pedal.face.footswitches) for (const a of [f.press, f.hold]) visit(a);
+  return out;
+}
+
 /** Every CC the editor can send for a pedal. */
 function editorCcs(pedal: PedalDefinition) {
   const ccs = new Set<number>();
@@ -38,9 +55,7 @@ function editorCcs(pedal: PedalDefinition) {
     if (c.cc !== undefined) ccs.add(c.cc);
     for (const m of messagesFor(c, values[c.id], values)) if (m.type === 'cc') ccs.add(m.cc);
   }
-  for (const f of pedal.face.footswitches) {
-    for (const a of [f.press, f.hold]) if (a?.type === 'momentary') ccs.add(a.cc);
-  }
+  for (const a of footswitchActions(pedal)) if (a.type === 'momentary') ccs.add(a.cc);
   if (pedal.tap) ccs.add(pedal.tap.cc);
   if (pedal.presets.store) ccs.add(pedal.presets.store.cc);
   for (const c of pedal.commands ?? []) ccs.add(c.cc);
@@ -71,8 +86,7 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
       b.type === 'controls' ? b.controls : b.type === 'dips' ? b.banks.flatMap((x) => x.controls) : b.type === 'select' ? [b.control] : [],
     ),
   );
-  const footswitchRefs = pedal.face.footswitches.flatMap((f) => [f.press, f.hold].flatMap((a) => (a?.type === 'toggle' ? [a.control] : [])));
-  const faceExtras = [...(pedal.face.buttons ?? []), ...(pedal.face.centerToggle ? [pedal.face.centerToggle] : [])];
+  const faceRefs = faceControlIds(pedal.face);
   const commandStateRefs = (pedal.commands ?? []).flatMap((c) => Object.keys(c.then ?? {}));
 
   it('has unique control ids', () => {
@@ -91,8 +105,9 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
     expect(pedal.defaultChannel).toBeGreaterThanOrEqual(1);
     expect(pedal.defaultChannel).toBeLessThanOrEqual(16);
     if (pedal.presets.store) {
-      expect(pedal.presets.store.minSlot).toBeGreaterThanOrEqual(1);
-      expect(pedal.presets.store.maxSlot).toBeLessThanOrEqual(122);
+      // classic pedals: CC111 = 1–122; Automatones: CC27 = 0-based slot
+      expect(pedal.presets.store.minSlot).toBeGreaterThanOrEqual(pedal.face.format === 'classic' ? 1 : 0);
+      expect(pedal.presets.store.maxSlot).toBeLessThanOrEqual(pedal.face.format === 'classic' ? 122 : 127);
     }
   });
 
@@ -105,9 +120,9 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
     }
   });
 
-  it('toggle and select options are distinct and in range', () => {
+  it('toggle, select and arcade options are distinct and in range', () => {
     for (const c of pedal.controls) {
-      if (c.kind !== 'toggle' && c.kind !== 'select') continue;
+      if (!hasOptions(c)) continue;
       const values = c.options.map((o) => o.value);
       expect(values.length, c.id).toBeGreaterThanOrEqual(2);
       expect(new Set(values).size, c.id).toBe(values.length);
@@ -118,12 +133,9 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
 
   it('only references existing controls', () => {
     const refs = [
-      ...pedal.face.knobs.flat(),
-      ...pedal.face.toggles,
+      ...faceRefs,
       ...pedal.random.flatMap((g) => g.controls),
       ...controlRefs,
-      ...footswitchRefs,
-      ...faceExtras,
       ...commandStateRefs,
       ...(pedal.tap?.bpmControl ? [pedal.tap.bpmControl] : []),
       ...(pedal.ideas ?? []).flatMap((g) => g.items.flatMap((i) => Object.keys(i.values))),
@@ -131,7 +143,7 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
     for (const r of refs) expect(ids.has(r), r).toBe(true);
     const commandIds = new Set((pedal.commands ?? []).map((c) => c.id));
     const commandRefs = [
-      ...pedal.face.footswitches.flatMap((f) => [f.press, f.hold].flatMap((a) => (a?.type === 'command' ? [a.id] : []))),
+      ...footswitchActions(pedal).flatMap((a) => (a.type === 'command' ? [a.id] : [])),
       ...pedal.sections.flatMap((s) => s.blocks).flatMap((b) => (b.type === 'commands' ? b.commands : [])),
     ];
     for (const r of commandRefs) expect(commandIds.has(r), `command ${r}`).toBe(true);
@@ -139,11 +151,8 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
 
   it('shows every control somewhere in the UI', () => {
     const placed = new Set([
-      ...pedal.face.knobs.flat(),
-      ...pedal.face.toggles,
+      ...faceRefs,
       ...controlRefs,
-      ...footswitchRefs,
-      ...faceExtras,
       ...commandStateRefs,
       ...(pedal.tap?.bpmControl ? [pedal.tap.bpmControl] : []),
     ]);
@@ -164,9 +173,24 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
     if (bpm) for (const g of pedal.random) expect(g.controls, g.id).not.toContain(bpm);
   });
 
-  it('has a complete theme and three LEDs', () => {
+  it('has a complete theme and one LED state per LED on the face', () => {
     for (const colour of Object.values(pedal.theme)) expect(colour).toMatch(HEX);
-    expect(pedal.leds({ values: defaults(pedal), held: new Set(), preset: { kind: 'live' } })).toHaveLength(3);
+    const leds = pedal.leds({ values: defaults(pedal), held: new Set(), preset: { kind: 'live' } });
+    expect(leds).toHaveLength(pedal.face.format === 'classic' ? 3 : 2);
+  });
+
+  it('places six faders and five arcade buttons on an Automatone face', () => {
+    const face = pedal.face;
+    if (face.format !== 'automatone') return;
+    expect(face.faders).toHaveLength(6);
+    expect(face.buttons).toHaveLength(5);
+    for (const id of face.faders) expect(pedal.controls.find((c) => c.id === id)?.kind, id).toBe('fader');
+    for (const id of face.buttons) expect(pedal.controls.find((c) => c.id === id)?.kind, id).toBe('arcade');
+    if (face.alt) {
+      expect(face.alt.faders).toHaveLength(6);
+      expect(face.alt.buttons).toHaveLength(5);
+    }
+    expect(pedal.presets.toggle).toBe(false);
   });
 
   it('keeps the legacy storage key and editor URL', () => {

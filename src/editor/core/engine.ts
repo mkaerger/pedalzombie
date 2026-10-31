@@ -266,7 +266,7 @@ export class EditorEngine {
 
   command(id: string) {
     const cmd = this.pedal.commands?.find((c) => c.id === id);
-    if (!cmd) return;
+    if (!cmd || (cmd.enabled && !cmd.enabled(this.state.values))) return;
     this.onEvent('command', { command: id });
     this.sink.send({ type: 'cc', cc: cmd.cc, value: cmd.value });
     if (cmd.then) this.update({ values: { ...this.state.values, ...cmd.then } });
@@ -290,12 +290,18 @@ export class EditorEngine {
     }
     const hold = fs.hold;
     press.cancel = this.schedule(() => {
-      if (hold.type === 'momentary' && hold.enabled && !hold.enabled(this.state.values)) return;
+      const action = this.resolve(hold);
+      if (action.type === 'momentary' && action.enabled && !action.enabled(this.state.values)) return;
       press.holding = true;
       this.onEvent('footswitch', { switch: id, action: 'hold' });
-      this.run(hold, 'down');
+      this.run(action, 'down');
       this.update({ held: new Set(this.state.held).add(id) });
     }, this.holdMs);
+  }
+
+  /** The concrete action right now — `by` actions depend on the current values. */
+  private resolve(action: FootswitchAction): FootswitchAction {
+    return action.type === 'by' ? this.resolve(action.action(this.state.values)) : action;
   }
 
   /** Release; `cancelled` when the pointer left the switch (no click action then). */
@@ -306,7 +312,7 @@ export class EditorEngine {
     this.presses.delete(id);
     press.cancel();
     if (press.holding && fs.hold) {
-      this.run(fs.hold, 'up');
+      this.run(this.resolve(fs.hold), 'up');
       const held = new Set(this.state.held);
       held.delete(id);
       this.update({ held });
@@ -322,6 +328,9 @@ export class EditorEngine {
 
   private run(action: FootswitchAction, phase: 'down' | 'up') {
     switch (action.type) {
+      case 'by':
+        this.run(this.resolve(action), phase);
+        return;
       case 'toggle': {
         const c = this.controls.get(action.control);
         if (c?.kind !== 'switch' && c?.kind !== 'value') return;
