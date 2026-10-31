@@ -175,11 +175,12 @@ Connection: 5-pin MIDI cable from the interface's MIDI OUT straight into MIDI IN
 - [ ] Options menu CC42–48 and tap subdivision CC54; MIDI clock CC110 (not in MOD mode); MIDI notes CC112
 - [ ] Save to current slot (CC28); is PC 126 the last valid slot, or does PC 127 work too?
 
-## Older analog pedals (Thermae, Dark World, Tonal Recall, Bliss Factory, Condor, Gravitas, Warped Vinyl HiFi)
+## Older analog pedals (Thermae, Dark World, Tonal Recall, Bliss Factory, Condor, Gravitas, Warped Vinyl HiFi, Spectre, Wombtone)
 
 Their MIDI manuals are one-pagers: no dip switch CCs, mostly no toggle CCs. The editors send only what is printed.
 
-- [ ] Gravitas answers on **channel 4**, Warped Vinyl HiFi on **channel 6** by default (the editor starts there)
+- [ ] Gravitas answers on **channel 4**, Spectre on **channel 3**, Warped Vinyl HiFi and Wombtone MKII on **channel 6**,
+      the Billy Strings Wombtone on channel 2 by default (the editor starts there)
 - [ ] Condor / Condor HiFi / Dark World: the two footswitch states go out as one CC103 value (0 / 45 / 85 / 127; HiFi
       15 / 45 / 75 / 110) — check all four combinations land in the right state on the pedal
 - [ ] Condor HiFi toggles: values 1 / 2 / 3 select left / middle / right (manual prints "0, 1 / 2 / 3 or more")

@@ -21,10 +21,12 @@ import { moodmkii } from '../moodmkii';
 import { onward } from '../onward';
 import { freqHz, preampmkii } from '../preampmkii';
 import { reversemodec } from '../reversemodec';
+import { spectre } from '../spectre';
 import { thermae } from '../thermae';
 import { tonalrecall, TR_DIVISIONS } from '../tonalrecall';
 import { warpedvinylhifi } from '../warpedvinylhifi';
 import { warpedvinylmkii } from '../warpedvinylmkii';
+import { billystringswombtone, wombtonemkii } from '../wombtone';
 
 const hold = (engine: { pressStart(id: string): void; pressEnd(id: string): void }, advance: (ms: number) => void, id: string) => {
   engine.pressStart(id);
@@ -914,5 +916,29 @@ describe('Bliss Factory', () => {
     expect(detail()).toBe('No effect while COMP is fully up');
     expect(blissfactory.tap).toBeUndefined();
     expect(blissfactory.controls.some((c) => c.cc === 51 || c.cc === 93)).toBe(false);
+  });
+});
+
+describe('Spectre and Wombtone', () => {
+  it.each([
+    ['Spectre', spectre, 3],
+    ['Wombtone MKII', wombtonemkii, 6],
+    ['Billy Strings Wombtone', billystringswombtone, 2],
+  ])('%s: old-style map on channel %i, tap CC93, clock division CC21, bypass 0 / 127', (_, pedal, channel) => {
+    const { engine, sink } = setup(pedal);
+    expect(pedal.defaultChannel).toBe(channel);
+    expect(pedal.controls.map((c) => c.cc).filter((cc): cc is number => cc !== undefined).sort((a, b) => a - b)).toEqual([14, 15, 16, 17, 18, 19, 20, 21, 51, 102]);
+    engine.set('s4', 0);
+    sink.take();
+    engine.set('s3', 2);
+    click(engine, 's1');
+    click(engine, 'tap');
+    expect(sink.take()).toEqual([cc(21, 2), cc(51, 127), cc(102, 0), cc(93, 127)]);
+    expect(pedal.face.format === 'classic' && pedal.face.toggles).toEqual([]);
+  });
+
+  it('both Wombtones share knobs and differ only in channel and look', () => {
+    expect(wombtonemkii.controls.map((c) => c.label)).toEqual(billystringswombtone.controls.map((c) => c.label));
+    expect(wombtonemkii.theme.body).not.toBe(billystringswombtone.theme.body);
   });
 });

@@ -18,6 +18,7 @@ save presets, store them on the pedal. No install, no account, nothing leaves yo
 | Habit | [/habit-editor/](https://pedalzombie.com/habit-editor/) |
 | Blooper | [/blooper-editor/](https://pedalzombie.com/blooper-editor/) |
 | MOOD | [/mood-editor/](https://pedalzombie.com/mood-editor/) |
+| Billy Strings Wombtone | [/billystringswombtone-editor/](https://pedalzombie.com/billystringswombtone-editor/) |
 | Condor HiFi | [/condorhifi-editor/](https://pedalzombie.com/condorhifi-editor/) |
 | Bliss Factory | [/blissfactory-editor/](https://pedalzombie.com/blissfactory-editor/) |
 | Dark World | [/darkworld-editor/](https://pedalzombie.com/darkworld-editor/) |
@@ -26,6 +27,8 @@ save presets, store them on the pedal. No install, no account, nothing leaves yo
 | Condor | [/condor-editor/](https://pedalzombie.com/condor-editor/) |
 | Tonal Recall / RKM | [/tonalrecall-editor/](https://pedalzombie.com/tonalrecall-editor/) |
 | Warped Vinyl MKII | [/warpedvinyl-editor/](https://pedalzombie.com/warpedvinyl-editor/) |
+| Spectre | [/spectre-editor/](https://pedalzombie.com/spectre-editor/) |
+| Wombtone MKII | [/wombtonemkii-editor/](https://pedalzombie.com/wombtonemkii-editor/) |
 | Gravitas | [/gravitas-editor/](https://pedalzombie.com/gravitas-editor/) |
 
 Automatone series (motorized faders, 5-pin MIDI, no adapter needed):

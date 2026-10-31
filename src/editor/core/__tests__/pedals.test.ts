@@ -41,6 +41,9 @@ const NOT_SENT: Record<string, number[]> = {
   'darkworld-editor': [100, 102], // CC103 carries both channels
   'tonalrecall-editor': [100],
   'blissfactory-editor': [100],
+  'spectre-editor': [100],
+  'wombtonemkii-editor': [100],
+  'billystringswombtone-editor': [100],
 };
 
 /**

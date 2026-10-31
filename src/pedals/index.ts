@@ -18,10 +18,12 @@ import { moodmkii } from './moodmkii';
 import { onward } from './onward';
 import { preampmkii } from './preampmkii';
 import { reversemodec } from './reversemodec';
+import { spectre } from './spectre';
 import { thermae } from './thermae';
 import { tonalrecall } from './tonalrecall';
 import { warpedvinylhifi } from './warpedvinylhifi';
 import { warpedvinylmkii } from './warpedvinylmkii';
+import { billystringswombtone, wombtonemkii } from './wombtone';
 
 const newestFirst = (a: PedalDefinition, b: PedalDefinition) => b.released.localeCompare(a.released);
 
@@ -47,10 +49,13 @@ export const pedals: PedalDefinition[] = [
   onward,
   preampmkii,
   reversemodec,
+  spectre,
   thermae,
   tonalrecall,
   warpedvinylhifi,
   warpedvinylmkii,
+  wombtonemkii,
+  billystringswombtone,
 ].sort(newestFirst);
 
 /** The compact pedals and the Automatone series, each newest first. */

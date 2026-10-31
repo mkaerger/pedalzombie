@@ -33,6 +33,9 @@ Common to all pedals covered here:
 | Condor HiFi | [condor-hifi.md](condor-hifi.md) | 2 | Condor-Hifi_Midi-Manual (CBA ref 2024 – CDR02) |
 | Gravitas | [gravitas.md](gravitas.md) | **4** | Gravitas_MIDI-Manual (c. 2015); no toggle CCs |
 | Warped Vinyl HiFi | [warped-vinyl-hifi.md](warped-vinyl-hifi.md) | **6** | Warped-Vinyl-HiFi_MIDI-Manual (c. 2017); LAG on CC15 |
+| Spectre | [spectre.md](spectre.md) | **3** | Spectre_MIDI-Manual (2016); no toggle CCs |
+| Wombtone MKII | [wombtone-mkii.md](wombtone-mkii.md) | **6** | Wombtone_MKII_MIDI-Manual (2018); no toggle CCs |
+| Billy Strings Wombtone | [billy-strings-wombtone.md](billy-strings-wombtone.md) | 2 | Billy_Strings_Wombtone_Midi_Manual (CBA + BS ref 2024 – WT03); bypass threshold 64 |
 
 ## Automatone series
 
