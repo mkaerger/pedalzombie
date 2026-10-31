@@ -143,3 +143,34 @@ Start: `npm run build && npm run preview`, open the editor in Chrome, **Connect 
 - [ ] Hidden options CC24–30, sync CC31, spread CC32, cross input CC33; EQ per channel CC85
 - [ ] Clock divisions CC53/54 = 0–8 (double whole = 8), MIDI clock CC51, stop ramping CC52, true bypass CC55
 - [ ] Store CC111, factory reset CC56, MIDI reset CC110; tap CC93
+
+## Automatone series (Preamp MKII, CXM 1978, Big Time)
+
+Connection: 5-pin MIDI cable from the interface's MIDI OUT straight into MIDI IN, no TRS box.
+
+- [ ] Every fader moves the **motorized fader** on the pedal; "Sync pedal" moves all six at once
+- [ ] Arcade buttons: each state lights the LED colour printed on the pedal (CXM / Preamp send 1 / 2 / 3, Big Time 0–3)
+- [ ] Recall preset 3 (PC 3), then **PRESET** on screen steps to 4; hold PRESET switches the bank (PC +10); the
+      BANK LED on screen matches the pedal (off / red / green)
+- [ ] Store: slot 0 works (CC27 = 0); hold **BYPASS** on screen saves into the last recalled slot
+- [ ] The display on screen shows the same preset digit as the pedal after a recall
+
+### CXM 1978
+
+- [ ] Heel / Toe position (CC28 / 29) move the faders if the preset has expression programmed; Buffer clear (CC30)
+- [ ] Sustain lock (CC31 = 0) holds the tail, off (CC31 = 1) fades it
+
+### Preamp MKII
+
+- [ ] MIDS button Off: MIDS and FREQ faders stop reacting (editor marks them inactive)
+
+### Big Time
+
+- [ ] Left switch: tap tempo in SHORT / LONG (CC103 = 127), motion on / off in MOD, record in LOOP — does a value
+      of 127 count as one tap every time? If taps are lost, try alternating values
+- [ ] Right switch: bypass (CC102 0 / 1) in the delay modes, play / stop (CC102 = 127) in LOOP; hold = HOLD (CC106
+      1 / 0) vs. delete (CC106 = 127)
+- [ ] Alt layer: SHIFT on screen shows the alt controls; TEXTURE … DRY (CC32–37) and SPREAD / 0.5X / DIFFUSE TYPE /
+      +12 dB (CC38–41) reach the pedal
+- [ ] Options menu CC42–48 and tap subdivision CC54; MIDI clock CC110 (not in MOD mode); MIDI notes CC112
+- [ ] Save to current slot (CC28); is PC 126 the last valid slot, or does PC 127 work too?

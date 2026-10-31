@@ -983,12 +983,12 @@
 }
 
 .automatone__sub {
-  font: 500 0.56rem/1.1 var(--font);
-  letter-spacing: 0.08em;
+  font: 500 0.54rem/1.1 var(--font);
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   opacity: 0.55;
   text-align: center;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .automatone__bottom {
@@ -1047,10 +1047,10 @@
 }
 
 .mfader__label {
-  font: 600 0.62rem/1.2 var(--font);
-  letter-spacing: 0.08em;
+  font: 600 0.58rem/1.2 var(--font);
+  letter-spacing: 0.03em;
   margin-bottom: 6px;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .mfader__slot {
@@ -1149,6 +1149,22 @@
   background: rgb(0 0 0 / 0.18);
   padding: 2px 6px;
   border-radius: 999px;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .pedal--automatone {
+    padding-inline: 12px;
+    border-left-width: 10px;
+    border-right-width: 10px;
+  }
+  .automatone__faders,
+  .automatone__buttons {
+    gap: 2px;
+  }
+  .automatone__buttons {
+    margin-inline: 0;
+  }
 }
 
 /* -- arcade button -------------------------------------------------------- */
@@ -1168,17 +1184,17 @@
 }
 
 .arcade__state {
-  font: 600 0.58rem/1.2 var(--font);
-  letter-spacing: 0.06em;
+  font: 600 0.56rem/1.25 var(--font);
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: inherit;
   opacity: 0.45;
   background: none;
   border: 0;
-  padding: 1px 4px;
+  padding: 1px 3px;
   border-radius: 3px;
   cursor: pointer;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .arcade__state--blue {

@@ -87,9 +87,11 @@ export function coerce(c: Control, raw: unknown): number | undefined {
     return c.options.some((o) => o.value === n) ? n : undefined;
   }
   if (c.kind === 'switch') {
-    // legacy presets store 0/1 for on/off, or a knob value where the pedal uses a threshold (GEN LOSS CC26)
-    if (n === c.off || n === 0) return c.off;
-    if (n === c.on || n === 1) return c.on;
+    if (n === c.off) return c.off;
+    if (n === c.on) return c.on;
+    // legacy presets store 0/1 for off/on, or a knob value where the pedal uses a threshold (GEN LOSS CC26)
+    if (n === 0) return c.off;
+    if (n === 1) return c.on;
     return n >= (c.on + c.off) / 2 ? c.on : c.off;
   }
   const [lo, hi] = bounds(c);
@@ -121,12 +123,11 @@ export function randomValue(c: Control, rng: Rng): number {
   return lo + Math.floor(rng() * (hi - lo + 1));
 }
 
-/** Every control id placed on the pedal face, whatever its format. */
+/** Every control id with a widget on the pedal face, whatever its format (footswitch actions aside). */
 export function faceControlIds(face: Face): string[] {
-  const toggles = face.footswitches.flatMap((f) => [f.press, f.hold].flatMap((a) => (a?.type === 'toggle' ? [a.control] : [])));
   if (face.format === 'classic') {
-    return [...face.knobs.flat(), ...face.toggles, ...(face.centerToggle ? [face.centerToggle] : []), ...(face.buttons ?? []), ...toggles];
+    return [...face.knobs.flat(), ...face.toggles, ...(face.centerToggle ? [face.centerToggle] : []), ...(face.buttons ?? [])];
   }
   const alt = face.alt ? [...face.alt.faders, ...face.alt.buttons].filter((id): id is string => id !== null) : [];
-  return [...face.faders, ...face.buttons, ...alt, ...toggles];
+  return [...face.faders, ...face.buttons, ...alt];
 }

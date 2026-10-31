@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { cc, MemoryStorage, pc, setup } from '../../editor/core/__tests__/helpers';
 import { PresetStore } from '../../editor/core/presets';
+import { describeSlot, nextBank, nextPreset } from '../automatone';
 import { badmood, FLIP_CHORDS } from '../badmood';
+import { bigtime, SUBDIVISIONS } from '../bigtime';
 import { blooper } from '../blooper';
 import { brothersam } from '../brothersam';
 import { clean } from '../clean';
+import { crossHz, cxm } from '../cxm';
 import { genlossmkii } from '../genlossmkii';
 import { habit } from '../habit';
 import { lossy } from '../lossy';
@@ -12,6 +15,7 @@ import { lostfound, modeFor } from '../lostfound';
 import { mood } from '../mood';
 import { moodmkii } from '../moodmkii';
 import { onward } from '../onward';
+import { freqHz, preampmkii } from '../preampmkii';
 import { reversemodec } from '../reversemodec';
 import { warpedvinylmkii } from '../warpedvinylmkii';
 
@@ -535,5 +539,179 @@ describe('BAD MOOD', () => {
     engine.set('h4', 3);
     engine.tap();
     expect(sink.take()).toEqual([cc(53, 8), cc(54, 0), cc(85, 3), cc(93, 127)]);
+  });
+});
+
+describe('Preamp MKII', () => {
+  it('arcade buttons send only the documented values 1, 2 and 3', () => {
+    const { engine, sink } = setup(preampmkii);
+    engine.set('b5', 3);
+    engine.set('b5', 0); // not a documented value
+    engine.set('b5', 4);
+    expect(sink.take()).toEqual([cc(26, 3)]);
+    for (const c of preampmkii.controls) if (c.kind === 'arcade') expect(c.options.map((o) => o.value)).toEqual([1, 2, 3]);
+  });
+
+  it('PRESET steps through the bank, hold switches the bank, hold BYPASS saves to the current preset', () => {
+    const { engine, sink, advance } = setup(preampmkii);
+    click(engine, 'preset'); // unknown → preset 0
+    click(engine, 'preset');
+    hold(engine, advance, 'preset'); // bank 2, preset 1
+    expect(sink.take()).toEqual([pc(0), pc(1), pc(11)]);
+    hold(engine, advance, 'bypass');
+    expect(sink.take()).toEqual([cc(27, 11)]);
+    expect(engine.getState().preset).toMatchObject({ kind: 'store', slot: 11 });
+    expect(preampmkii.leds(engine.getState())[0]).toMatchObject({ color: 'red' }); // bank 2
+  });
+
+  it('wraps presets within the bank and banks after the third', () => {
+    expect(nextPreset(9)).toBe(0);
+    expect(nextPreset(19)).toBe(10);
+    expect(nextBank(25)).toBe(5);
+    expect(describeSlot(17)).toBe('Bank 2 · preset 7');
+  });
+
+  it('hold BYPASS does nothing before a preset is known; click toggles CC102', () => {
+    const { engine, sink, advance } = setup(preampmkii);
+    hold(engine, advance, 'bypass');
+    click(engine, 'bypass');
+    expect(sink.take()).toEqual([cc(102, 0)]);
+    expect(preampmkii.leds(engine.getState())[1]).toEqual({ color: 'off' });
+  });
+
+  it('MIDS and FREQ are marked inactive while the MIDS button is off', () => {
+    const { engine } = setup(preampmkii);
+    const f4 = engine.control('f4');
+    const detail = () => (f4?.kind === 'fader' ? f4.detail?.(engine.getState().values) : undefined);
+    expect(detail()).toBe('Inactive (MIDS off)');
+    engine.set('b2', 2);
+    expect(detail()).toBeUndefined();
+    expect(freqHz(0)).toBe(150);
+    expect(freqHz(127)).toBe(4200);
+  });
+
+  it('stores presets 0–29 and shows the preset number of the bank on the display', () => {
+    const { engine } = setup(preampmkii);
+    expect(engine.store(29)).toBe(true);
+    expect(engine.store(30)).toBe(false);
+    expect(preampmkii.face.format === 'automatone' && preampmkii.face.display?.(17)).toBe('7');
+  });
+});
+
+describe('CXM 1978', () => {
+  it('aux performance switches are one-shot 127s; sustain lock is inverted and never replayed', () => {
+    const { engine, sink } = setup(cxm);
+    engine.command('heel');
+    engine.command('toe');
+    engine.command('clear');
+    engine.set('h1', 0); // locked
+    expect(sink.take()).toEqual([cc(28, 127), cc(29, 127), cc(30, 127), cc(31, 0)]);
+    engine.sendAll();
+    expect(sink.take().some((m) => m.type === 'cc' && m.cc === 31)).toBe(false);
+  });
+
+  it('pre-delay explains its range from the CLOCK button; CROSS reads in Hz', () => {
+    const { engine } = setup(cxm);
+    const f6 = engine.control('f6');
+    const detail = () => (f6?.kind === 'fader' ? f6.detail?.(engine.getState().values) : undefined);
+    expect(detail()).toBe('≤ 42 ms (HiFi)');
+    engine.set('b5', 3);
+    expect(detail()).toMatch(/1\.7 s/);
+    expect(crossHz(0)).toBe(0);
+    expect(crossHz(64)).toBeGreaterThan(340);
+    expect(crossHz(64)).toBeLessThan(380);
+    expect(crossHz(127)).toBe(1700);
+  });
+
+  it('randomize everything keeps bypass, JUMP and sustain lock', () => {
+    const { engine, sink } = setup(cxm);
+    engine.randomize('all');
+    const ccs = sink.take().map((m) => (m.type === 'cc' ? m.cc : -1));
+    for (const keep of [102, 22, 31]) expect(ccs).not.toContain(keep);
+    expect(ccs).toEqual(expect.arrayContaining([14, 19, 23, 26]));
+  });
+});
+
+describe('Big Time', () => {
+  const loop = (engine: { set(id: string, v: number): void }) => engine.set('b3', 3);
+
+  it('buttons are 0-based with four states', () => {
+    const { engine, sink } = setup(bigtime);
+    engine.set('b1', 3);
+    engine.set('b2', 1);
+    engine.set('b2', 0);
+    engine.set('b2', 4); // not a state
+    expect(sink.take()).toEqual([cc(22, 3), cc(23, 1), cc(23, 0)]);
+  });
+
+  it('left switch: tap in SHORT / LONG, motion in MOD, rec / play / dub in LOOP — all on CC103', () => {
+    const { engine, sink } = setup(bigtime);
+    click(engine, 'tempo');
+    engine.set('b3', 0);
+    click(engine, 'tempo');
+    loop(engine);
+    click(engine, 'tempo');
+    expect(sink.take()).toEqual([cc(103, 127), cc(24, 0), cc(103, 127), cc(24, 3), cc(103, 127)]);
+    const label = (v: Record<string, number>) => bigtime.face.footswitches[0].labelFor?.(v);
+    expect(label({ b3: 1 })).toBeUndefined();
+    expect(label({ b3: 0 })).toBe('Motion');
+    expect(label({ b3: 3 })).toBe('Rec / Play / Dub');
+  });
+
+  it('right switch: bypass (hold = HOLD) in the delay modes, play / stop (hold = delete) in LOOP', () => {
+    const { engine, sink, advance } = setup(bigtime);
+    click(engine, 'bypass');
+    hold(engine, advance, 'bypass');
+    expect(sink.take()).toEqual([cc(102, 0), cc(106, 1), cc(106, 0)]);
+    loop(engine);
+    sink.take();
+    click(engine, 'bypass');
+    hold(engine, advance, 'bypass');
+    expect(sink.take()).toEqual([cc(102, 127), cc(106, 127)]);
+  });
+
+  it('in LOOP mode the bypass switch and preset loads never touch CC102, the transport is enabled', () => {
+    const { engine, sink } = setup(bigtime);
+    engine.command('record');
+    expect(sink.take()).toEqual([]); // disabled outside LOOP
+    loop(engine);
+    sink.take();
+    engine.set('s1', 0);
+    engine.load({ ...engine.getState().values, s1: 1 });
+    expect(sink.take().some((m) => m.type === 'cc' && m.cc === 102)).toBe(false);
+    engine.command('record');
+    engine.command('stop');
+    expect(sink.take()).toEqual([cc(104, 127), cc(107, 127)]);
+  });
+
+  it('saves with CC27 = slot (0–126) or CC28 for the current slot', () => {
+    const { engine, sink } = setup(bigtime);
+    expect(engine.store(0)).toBe(true);
+    expect(engine.store(126)).toBe(true);
+    expect(engine.store(127)).toBe(false);
+    engine.command('save-current');
+    expect(sink.take()).toEqual([cc(27, 0), cc(27, 126), cc(28, 127)]);
+  });
+
+  it('the bypass LED is green with balanced I/O and red unbalanced', () => {
+    const { engine } = setup(bigtime);
+    expect(bigtime.leds(engine.getState())[1]).toEqual({ color: 'green' });
+    engine.set('o7', 1);
+    expect(bigtime.leds(engine.getState())[1]).toEqual({ color: 'red' });
+    engine.set('s1', 0);
+    expect(bigtime.leds(engine.getState())[1]).toEqual({ color: 'off' });
+  });
+
+  it('randomize everything keeps bypass, MODE, the options menu and the MIDI settings', () => {
+    const { engine, sink } = setup(bigtime);
+    engine.randomize('all');
+    const ccs = sink.take().map((m) => (m.type === 'cc' ? m.cc : -1));
+    for (const keep of [102, 24, 42, 43, 44, 45, 46, 47, 48, 54, 110, 112]) expect(ccs).not.toContain(keep);
+    expect(ccs).toEqual(expect.arrayContaining([14, 19, 22, 26, 32, 37, 38, 41]));
+  });
+
+  it('has twelve tap subdivisions in manual order', () => {
+    expect(SUBDIVISIONS).toHaveLength(12);
+    expect(SUBDIVISIONS[6]).toEqual({ value: 6, label: 'Quarter' });
   });
 });

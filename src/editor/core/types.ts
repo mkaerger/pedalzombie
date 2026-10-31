@@ -161,7 +161,11 @@ export type FootswitchAction =
   /** Run one of `PedalDefinition.commands` (one-shot CC), e.g. a looper's STOP. */
   | { type: 'command'; id: string }
   /** Pick the action from the current values, e.g. Big Time's switches change with MODE. */
-  | { type: 'by'; action: (values: ControlValues) => FootswitchAction };
+  | { type: 'by'; action: (values: ControlValues) => FootswitchAction }
+  /** Recall a slot relative to the last one the editor recalled or stored (Automatone PRESET / BANK switch). */
+  | { type: 'recall'; slot: (current: number | undefined) => number | undefined }
+  /** Store into the last recalled slot, if the editor knows it (Automatone "hold BYPASS to save"). */
+  | { type: 'store-current' };
 
 export interface Footswitch {
   id: string;

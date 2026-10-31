@@ -235,6 +235,12 @@ export class EditorEngine {
     this.update({ preset: { kind: 'toggle', slot } });
   }
 
+  /** The slot the editor last recalled or stored; unknown after a preset toggle or at start. */
+  get currentSlot(): number | undefined {
+    const p = this.state.preset;
+    return p.kind === 'recall' || p.kind === 'store' ? p.slot : undefined;
+  }
+
   /** Slots the pedal recalls by program change. */
   get recallRange() {
     return this.pedal.presets.recall ?? { first: 1, last: 122, program: (slot: number) => slot, label: 'Slot' };
@@ -348,6 +354,15 @@ export class EditorEngine {
         return;
       case 'command':
         if (phase === 'down') this.command(action.id);
+        return;
+      case 'recall': {
+        if (phase === 'up') return;
+        const slot = action.slot(this.currentSlot);
+        if (slot !== undefined) this.recall(slot);
+        return;
+      }
+      case 'store-current':
+        if (phase === 'down' && this.currentSlot !== undefined) this.store(this.currentSlot);
         return;
     }
   }

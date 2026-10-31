@@ -26,6 +26,26 @@ Common to all pedals covered here:
 | Blooper | [blooper.md](blooper.md) | 2 | Blooper_MIDIManual (2019; loops are PC 0–15) |
 | BAD MOOD | [bad-mood.md](bad-mood.md) | 2 | BAD-MOOD_MIDI-Manual (Small Batch Bliss 2026, BAD1.1) |
 
+## Automatone series
+
+Preamp MKII, CXM 1978 and Big Time are the large Automatone units: six motorized faders (CC14–19), five arcade
+buttons (CC22–26), a 7-segment display, **5-pin DIN MIDI IN** (no TRS adapter) plus THRU / OUT. None of the
+common facts above apply to them:
+
+- **No live state, no preset toggle.** Presets are 0-based: PC n recalls slot n, **CC 27 = n saves** into slot n.
+  Preamp MKII and CXM 1978 have 30 slots in 3 banks × 10; Big Time has "127 total slots" and also CC 28 = save to
+  the current slot.
+- **Button values differ by generation.** CXM 1978 and Preamp MKII document only 1 / 2 / 3; Big Time is 0-based
+  with "3 or more" as the last state. Nothing uses the 0–42 / 43–85 / 86–127 split of the compact pedals.
+- **Channel change** still starts with both footswitches held at power-up, but CXM 1978 and Preamp MKII adopt
+  the channel of the first *Program Change* only (Big Time: first PC or CC).
+
+| Pedal | File | Default channel | Manual |
+|---|---|---|---|
+| Preamp MKII | [preamp-mkii.md](preamp-mkii.md) | 2 | Preamp-MKII_MIDI-Manual (2019) |
+| CXM 1978 | [cxm-1978.md](cxm-1978.md) | 2 | CXM-1978_MIDI-Manual (2020) |
+| Big Time | [big-time.md](big-time.md) | 2 | Big Time_MIDI Manual (CBA + EAE ref 2026 - BT001) |
+
 ## Corrections vs. the 2023 editors
 
 | Pedal | Old editor | Manual | New editor |

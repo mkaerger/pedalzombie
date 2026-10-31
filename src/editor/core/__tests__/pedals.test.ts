@@ -28,6 +28,10 @@ const NOT_SENT: Record<string, number[]> = {
   'lostfound-editor': [100, 104],
   'blooper-editor': [11, 100], // 11 = multi-control; the editor uses the individual transport CCs
   'badmood-editor': [100, 104],
+  // Automatones: 101 = EOM unlock / disengage, semantics undocumented
+  'preampmkii-editor': [100],
+  'cxm1978-editor': [100, 101],
+  'bigtime-editor': [100, 101],
 };
 
 /**
@@ -86,7 +90,7 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
       b.type === 'controls' ? b.controls : b.type === 'dips' ? b.banks.flatMap((x) => x.controls) : b.type === 'select' ? [b.control] : [],
     ),
   );
-  const faceRefs = faceControlIds(pedal.face);
+  const faceRefs = [...faceControlIds(pedal.face), ...footswitchActions(pedal).flatMap((a) => (a.type === 'toggle' ? [a.control] : []))];
   const commandStateRefs = (pedal.commands ?? []).flatMap((c) => Object.keys(c.then ?? {}));
 
   it('has unique control ids', () => {
