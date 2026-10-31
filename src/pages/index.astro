@@ -28,18 +28,11 @@ const jsonLd = {
         save presets, reach the dip switches without unscrewing anything.
       </p>
       <div class="hero__actions">
-        <a class="button button--primary" href="#editors">Choose your pedal</a>
+        <a class="button button--primary" href="#automatone">Choose your pedal</a>
         <a class="button" href="/setup/">What do I need?</a>
       </div>
     </div>
     <img class="hero__zombie" src="/img/zombie.svg" alt="" width="340" height="340" />
-  </section>
-
-  <section class="wrap" id="editors" aria-labelledby="editors-title">
-    <h2 id="editors-title">Editors</h2>
-    <div class="cards">
-      {classicPedals.map((pedal) => <PedalCard pedal={pedal} />)}
-    </div>
   </section>
 
   <section class="wrap automatone" id="automatone" aria-labelledby="automatone-title">
@@ -53,6 +46,13 @@ const jsonLd = {
     </div>
     <div class="cards">
       {automatonePedals.map((pedal) => <PedalCard pedal={pedal} />)}
+    </div>
+  </section>
+
+  <section class="wrap editors" id="editors" aria-labelledby="editors-title">
+    <h2 id="editors-title">Editors</h2>
+    <div class="cards">
+      {classicPedals.map((pedal) => <PedalCard pedal={pedal} />)}
     </div>
   </section>
 
@@ -113,7 +113,7 @@ const jsonLd = {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
     gap: 1rem;
   }
-  .automatone {
+  .editors {
     margin-top: clamp(2.5rem, 6vw, 4rem);
     padding-top: clamp(2rem, 5vw, 3rem);
     border-top: 1px solid var(--line);
