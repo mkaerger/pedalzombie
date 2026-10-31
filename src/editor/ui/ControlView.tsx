@@ -1,8 +1,10 @@
+import { ArcadeButton } from './ArcadeButton';
 import { useEditor, useEngineState } from './context';
 import { Knob } from './Knob';
+import { MotorFader } from './MotorFader';
 import { Fader, Segmented, Switch, Toggle } from './widgets';
 
-/** Renders any control by id with the widget matching its kind. */
+/** Renders any control by id with the widget matching its kind. `size="lg"` is the pedal face. */
 export function ControlView({ id, size }: { id: string; size?: 'lg' | 'md' }) {
   const { engine, assets } = useEditor();
   const { values } = useEngineState();
@@ -31,8 +33,24 @@ export function ControlView({ id, size }: { id: string; size?: 'lg' | 'md' }) {
         </div>
       );
     }
-    case 'fader':
-      return <Fader label={c.label} value={value} min={c.min} max={c.max} onChange={set} />;
+    case 'fader': {
+      const label = c.labelFor?.(values) ?? c.label;
+      if (size !== 'lg') return <Fader label={label} value={value} min={c.min} max={c.max} onChange={set} />;
+      return (
+        <MotorFader
+          label={label}
+          value={value}
+          min={c.min}
+          max={c.max}
+          defaultValue={c.default}
+          detail={c.detail?.(values)}
+          readout={c.readout?.(value, values)?.label}
+          onChange={set}
+        />
+      );
+    }
+    case 'arcade':
+      return <ArcadeButton label={c.label} value={value} options={c.options} hint={c.hint} onChange={set} />;
     case 'toggle':
       return <Toggle label={c.label} value={value} options={c.options} hint={c.hint} onChange={set} />;
     case 'switch':

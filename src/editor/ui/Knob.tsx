@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent, type PointerEvent, type WheelEvent } from 'react';
+import { useDragValue } from './useDragValue';
 
 interface Props {
   label: string;
@@ -13,8 +13,6 @@ interface Props {
 }
 
 const SWEEP = 270;
-/** Pixels of vertical drag for the full range; hold Shift for fine control. */
-const DRAG_RANGE = 200;
 
 function arc(r: number, from: number, to: number) {
   const p = (deg: number) => {
@@ -27,54 +25,9 @@ function arc(r: number, from: number, to: number) {
 
 /** Rotary knob: drag vertically, scroll, or use the keyboard. Double-click resets. */
 export function Knob({ label, value, min = 0, max = 127, defaultValue, detail, readout, size = 'md', onChange }: Props) {
-  const drag = useRef<{ y: number; start: number } | null>(null);
-  const [active, setActive] = useState(false);
-  const clamp = (v: number) => Math.min(max, Math.max(min, Math.round(v)));
-  const set = (v: number) => {
-    const c = clamp(v);
-    if (c !== value) onChange(c);
-  };
-
+  const { active, handlers } = useDragValue({ value, min, max, defaultValue, onChange });
   const start = -SWEEP / 2;
   const angle = start + ((value - min) / (max - min)) * SWEEP;
-
-  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
-    e.currentTarget.focus();
-    drag.current = { y: e.clientY, start: value };
-    setActive(true);
-  };
-  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (!drag.current) return;
-    const scale = e.shiftKey ? 0.2 : 1;
-    set(drag.current.start + ((drag.current.y - e.clientY) / DRAG_RANGE) * (max - min) * scale);
-  };
-  const onPointerUp = () => {
-    drag.current = null;
-    setActive(false);
-  };
-  const onWheel = (e: WheelEvent<HTMLDivElement>) => {
-    if (document.activeElement !== e.currentTarget) return; // don't hijack page scrolling
-    e.preventDefault();
-    set(value + (e.deltaY < 0 ? 1 : -1) * (e.shiftKey ? 1 : 4));
-  };
-  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const step = e.shiftKey ? 10 : 1;
-    const next: Record<string, number> = {
-      ArrowUp: value + step,
-      ArrowRight: value + step,
-      ArrowDown: value - step,
-      ArrowLeft: value - step,
-      PageUp: value + 16,
-      PageDown: value - 16,
-      Home: min,
-      End: max,
-    };
-    if (e.key in next) {
-      e.preventDefault();
-      set(next[e.key]);
-    }
-  };
 
   return (
     <div className={`knob knob--${size}${active ? ' is-active' : ''}`}>
@@ -87,13 +40,7 @@ export function Knob({ label, value, min = 0, max = 127, defaultValue, detail, r
         aria-valuemax={max}
         aria-valuenow={value}
         aria-valuetext={readout ? `${value} (${readout})` : String(value)}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        onWheel={onWheel}
-        onKeyDown={onKeyDown}
-        onDoubleClick={() => set(defaultValue)}
+        {...handlers}
       >
         <svg viewBox="0 0 100 100" aria-hidden="true">
           <path className="knob__track" d={arc(46, start, start + SWEEP)} />

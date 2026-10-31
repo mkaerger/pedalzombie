@@ -208,6 +208,8 @@ export interface AutomatoneFace extends FaceBase {
   alt?: { faders: (string | null)[]; buttons: (string | null)[] };
   /** Captions of the left and right LED, e.g. BANK and ACTIVE. */
   ledLabels: [string, string];
+  /** What the 7-segment display shows for a preset slot; default: the slot number. */
+  display?: (slot: number) => string;
 }
 
 export type Face = ClassicFace | AutomatoneFace;
