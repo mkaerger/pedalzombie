@@ -25,6 +25,14 @@ Common to all pedals covered here:
 | Lost + Found | [lost-found.md](lost-found.md) | 2 | Lost-Found_MIDI-Manual (2025) |
 | Blooper | [blooper.md](blooper.md) | 2 | Blooper_MIDIManual (2019; loops are PC 0–15) |
 | BAD MOOD | [bad-mood.md](bad-mood.md) | 2 | BAD-MOOD_MIDI-Manual (Small Batch Bliss 2026, BAD1.1) |
+| Thermae | [thermae.md](thermae.md) | 2 | Thermae_MIDI-Manual (2018); no dip CCs |
+| Dark World | [dark-world.md](dark-world.md) | 2 | Dark-World_MIDI-Manual (2018); both channels in CC103 |
+| Tonal Recall / RKM | [tonal-recall.md](tonal-recall.md) | 2 | Tonal-Recall_MIDI-Manual (2016); RKM shares it |
+| Bliss Factory | [bliss-factory.md](bliss-factory.md) | 2 | Bliss-Factory_MIDI-Manual (2020); AUX on CC101 |
+| Condor | [condor.md](condor.md) | 2 | Condor_MIDI-Manual (c. 2017); bypass + drive in CC103 |
+| Condor HiFi | [condor-hifi.md](condor-hifi.md) | 2 | Condor-Hifi_Midi-Manual (CBA ref 2024 – CDR02) |
+| Gravitas | [gravitas.md](gravitas.md) | **4** | Gravitas_MIDI-Manual (c. 2015); no toggle CCs |
+| Warped Vinyl HiFi | [warped-vinyl-hifi.md](warped-vinyl-hifi.md) | **6** | Warped-Vinyl-HiFi_MIDI-Manual (c. 2017); LAG on CC15 |
 
 ## Automatone series
 

@@ -32,6 +32,15 @@ const NOT_SENT: Record<string, number[]> = {
   'preampmkii-editor': [100],
   'cxm1978-editor': [100, 101],
   'bigtime-editor': [100, 101],
+  // CC103 carries bypass + drive on the Condors; CC102 ("last saved bypass state") is not needed
+  'condor-editor': [100, 102],
+  'condorhifi-editor': [100, 102],
+  'gravitas-editor': [100],
+  'warpedvinylhifi-editor': [100],
+  'thermae-editor': [100],
+  'darkworld-editor': [100, 102], // CC103 carries both channels
+  'tonalrecall-editor': [100],
+  'blissfactory-editor': [100],
 };
 
 /**

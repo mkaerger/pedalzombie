@@ -1,11 +1,15 @@
 import type { PedalDefinition } from '../editor/core/types';
 import { badmood } from './badmood';
 import { bigtime } from './bigtime';
+import { blissfactory } from './blissfactory';
 import { blooper } from './blooper';
 import { brothersam } from './brothersam';
 import { clean } from './clean';
+import { condor, condorhifi } from './condor';
 import { cxm } from './cxm';
+import { darkworld } from './darkworld';
 import { genlossmkii } from './genlossmkii';
+import { gravitas } from './gravitas';
 import { habit } from './habit';
 import { lossy } from './lossy';
 import { lostfound } from './lostfound';
@@ -14,6 +18,9 @@ import { moodmkii } from './moodmkii';
 import { onward } from './onward';
 import { preampmkii } from './preampmkii';
 import { reversemodec } from './reversemodec';
+import { thermae } from './thermae';
+import { tonalrecall } from './tonalrecall';
+import { warpedvinylhifi } from './warpedvinylhifi';
 import { warpedvinylmkii } from './warpedvinylmkii';
 
 const newestFirst = (a: PedalDefinition, b: PedalDefinition) => b.released.localeCompare(a.released);
@@ -22,11 +29,16 @@ const newestFirst = (a: PedalDefinition, b: PedalDefinition) => b.released.local
 export const pedals: PedalDefinition[] = [
   badmood,
   bigtime,
+  blissfactory,
   blooper,
   brothersam,
   clean,
+  condor,
+  condorhifi,
   cxm,
+  darkworld,
   genlossmkii,
+  gravitas,
   habit,
   lossy,
   lostfound,
@@ -35,6 +47,9 @@ export const pedals: PedalDefinition[] = [
   onward,
   preampmkii,
   reversemodec,
+  thermae,
+  tonalrecall,
+  warpedvinylhifi,
   warpedvinylmkii,
 ].sort(newestFirst);
 

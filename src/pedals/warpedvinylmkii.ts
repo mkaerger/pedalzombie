@@ -1,6 +1,6 @@
-import { dip, fader, knob, select, value } from '../editor/core/controls';
+import { dip, fader, knob } from '../editor/core/controls';
 import type { PedalDefinition } from '../editor/core/types';
-import { knobBlinkMs, LED_OFF, presetLed } from './shared';
+import { CLOCK_TAP, clockControls, clockOnChange, clockSection, knobBlinkMs, LED_OFF, presetLed } from './shared';
 
 // Reference: docs/midi/warped-vinyl-mkii.md
 // The three toggles and the dip switches have no MIDI control on this pedal.
@@ -26,16 +26,7 @@ export const warpedvinylmkii: PedalDefinition = {
     fader('f1', 'RAMP', 20, 64),
 
     dip('s1', 'BYPASS', 102, 127, { on: 127 }),
-    value('s2', 'Tempo', 60, { min: 20, max: 300 }),
-    select('s3', 'MIDI clock division', 21, 3, [
-      { value: 0, label: 'Whole' },
-      { value: 1, label: 'Half' },
-      { value: 2, label: '1/4 triplet' },
-      { value: 3, label: 'Quarter' },
-      { value: 4, label: 'Eighth' },
-      { value: 5, label: 'Sixteenth' },
-    ], { hint: 'Notes per vibrato period when following MIDI clock.' }),
-    dip('s4', 'MIDI CLOCK', 51, 127, { on: 127, offLabel: 'Ignore', onLabel: 'Listen' }),
+    ...clockControls(60, 'vibrato period'),
   ],
 
   face: {
@@ -51,27 +42,17 @@ export const warpedvinylmkii: PedalDefinition = {
     ],
   },
 
-  sections: [
-    {
-      id: 'clock',
-      title: 'Ramp & clock',
-      blocks: [
-        { type: 'controls', controls: ['f1', 's4'], columns: 2 },
-        { type: 'select', control: 's3' },
-      ],
-    },
-  ],
+  sections: [clockSection()],
 
   presets: { liveBeforeLoad: true },
-  tap: { cc: 93, value: 127, bpmControl: 's2' },
+  tap: CLOCK_TAP,
 
   random: [
     { id: 'knobs', label: 'Knobs', controls: ['k1', 'k2', 'k3', 'k4', 'k5', 'k6'] },
     { id: 'all', label: 'Everything', controls: ['k1', 'k2', 'k3', 'k4', 'k5', 'k6', 'f1'] },
   ],
 
-  // A clock division only has an effect while the pedal listens to MIDI clock.
-  onChange: (id, _value, v) => (id === 's3' && v.s4 !== 127 ? { s4: 127 } : undefined),
+  onChange: clockOnChange,
 
   leds: ({ values, preset }) => [
     { color: 'red', blinkMs: knobBlinkMs(127 - values.k4) },

@@ -1,5 +1,5 @@
-import { dip } from '../editor/core/controls';
-import type { LedState, PresetActivity, Section, SwitchControl, ValueRange } from '../editor/core/types';
+import { dip, select, value } from '../editor/core/controls';
+import type { Control, LedState, Option, PedalDefinition, PresetActivity, Section, SwitchControl, ValueRange } from '../editor/core/types';
 
 export const LED_OFF: LedState = { color: 'off' };
 
@@ -76,3 +76,37 @@ export const RAMP_WAVEFORMS: ValueRange[] = [
   { from: 81, to: 126, label: 'Random', image: 'waveform-81-126.png' },
   { from: 127, to: 127, label: 'Smooth random', image: 'waveform-127.png' },
 ];
+
+// ---------------------------------------------------------------------------
+// Tap tempo + MIDI clock of the older analog pedals (Warped Vinyl MKII / HiFi, Gravitas):
+// CC21 note divisions 0–5, CC51 clock ignore (0 ignore, 127 listen), CC93 tap, no toggle CCs.
+
+export const NOTE_DIVISIONS_SIX: Option[] = [
+  { value: 0, label: 'Whole' },
+  { value: 1, label: 'Half' },
+  { value: 2, label: '1/4 triplet' },
+  { value: 3, label: 'Quarter' },
+  { value: 4, label: 'Eighth' },
+  { value: 5, label: 'Sixteenth' },
+];
+
+/** Tempo value (s2), note division (s3) and clock listen (s4). `period` names what one division spans. */
+export const clockControls = (tempo: number, period: string): Control[] => [
+  value('s2', 'Tempo', tempo, { min: 20, max: 300 }),
+  select('s3', 'MIDI clock division', 21, 3, NOTE_DIVISIONS_SIX, { hint: `Notes per ${period} when following MIDI clock.` }),
+  dip('s4', 'MIDI CLOCK', 51, 127, { on: 127, offLabel: 'Ignore', onLabel: 'Listen' }),
+];
+
+export const clockSection = (): Section => ({
+  id: 'clock',
+  title: 'Ramp & clock',
+  blocks: [
+    { type: 'controls', controls: ['f1', 's4'], columns: 2 },
+    { type: 'select', control: 's3' },
+  ],
+});
+
+export const CLOCK_TAP = { cc: 93, value: 127, bpmControl: 's2' } as const;
+
+/** A clock division only has an effect while the pedal listens to MIDI clock. */
+export const clockOnChange: PedalDefinition['onChange'] = (id, _value, v) => (id === 's3' && v.s4 !== 127 ? { s4: 127 } : undefined);

@@ -4,11 +4,15 @@ import { PresetStore } from '../../editor/core/presets';
 import { describeSlot, nextBank, nextPreset } from '../automatone';
 import { badmood, FLIP_CHORDS } from '../badmood';
 import { bigtime, SUBDIVISIONS } from '../bigtime';
+import { blissfactory } from '../blissfactory';
 import { blooper } from '../blooper';
 import { brothersam } from '../brothersam';
 import { clean } from '../clean';
+import { condor, condorFreqHz, condorhifi } from '../condor';
 import { crossHz, cxm } from '../cxm';
+import { darkworld } from '../darkworld';
 import { genlossmkii } from '../genlossmkii';
+import { gravitas } from '../gravitas';
 import { habit } from '../habit';
 import { lossy } from '../lossy';
 import { lostfound, modeFor } from '../lostfound';
@@ -17,6 +21,9 @@ import { moodmkii } from '../moodmkii';
 import { onward } from '../onward';
 import { freqHz, preampmkii } from '../preampmkii';
 import { reversemodec } from '../reversemodec';
+import { thermae } from '../thermae';
+import { tonalrecall, TR_DIVISIONS } from '../tonalrecall';
+import { warpedvinylhifi } from '../warpedvinylhifi';
 import { warpedvinylmkii } from '../warpedvinylmkii';
 
 const hold = (engine: { pressStart(id: string): void; pressEnd(id: string): void }, advance: (ms: number) => void, id: string) => {
@@ -713,5 +720,199 @@ describe('Big Time', () => {
   it('has twelve tap subdivisions in manual order', () => {
     expect(SUBDIVISIONS).toHaveLength(12);
     expect(SUBDIVISIONS[6]).toEqual({ value: 6, label: 'Quarter' });
+  });
+});
+
+describe('Condor and Condor HiFi', () => {
+  it('bypass and drive travel together in CC103 with the original values 0 / 45 / 85 / 127', () => {
+    const { engine, sink } = setup(condor);
+    click(engine, 's2'); // drive on while engaged
+    expect(sink.take()).toEqual([cc(103, 127)]);
+    click(engine, 's1'); // bypass, drive still on
+    expect(sink.take()).toEqual([cc(103, 85)]);
+    click(engine, 's2'); // drive off, bypassed
+    expect(sink.take()).toEqual([cc(103, 0)]);
+    click(engine, 's1'); // engaged, clean
+    expect(sink.take()).toEqual([cc(103, 45)]);
+  });
+
+  it('the HiFi sends the centre of each documented CC103 range', () => {
+    const { engine, sink } = setup(condorhifi);
+    click(engine, 's2');
+    click(engine, 's1');
+    click(engine, 's2');
+    click(engine, 's1');
+    expect(sink.take()).toEqual([cc(103, 110), cc(103, 75), cc(103, 15), cc(103, 45)]);
+  });
+
+  it('never sends CC102 and goes live before loading a preset', () => {
+    for (const pedal of [condor, condorhifi]) {
+      const { engine, sink } = setup(pedal);
+      engine.load({ ...engine.getState().values, s1: 0, s2: 1 });
+      const sent = sink.take();
+      expect(sent[0]).toEqual(pc(0));
+      expect(sent.filter((m) => m.type === 'cc' && m.cc === 102)).toEqual([]);
+      expect(sent.filter((m) => m.type === 'cc' && m.cc === 103)).toHaveLength(1);
+    }
+  });
+
+  it('reads FREQ in Hz and the left LED shows clean / drive', () => {
+    const { engine } = setup(condor);
+    expect(condorFreqHz(0)).toBe(150);
+    expect(condorFreqHz(64)).toBeGreaterThan(1150);
+    expect(condorFreqHz(64)).toBeLessThan(1350);
+    expect(condorFreqHz(127)).toBe(4200);
+    expect(condor.leds(engine.getState())[0]).toEqual({ color: 'green' });
+    engine.set('s2', 1);
+    expect(condor.leds(engine.getState())[0]).toEqual({ color: 'red' });
+  });
+});
+
+describe('Gravitas and Warped Vinyl HiFi', () => {
+  it.each([
+    ['Gravitas', gravitas, 4],
+    ['Warped Vinyl HiFi', warpedvinylhifi, 6],
+  ])('%s: tap on CC93, division switches the clock on, bypass is 0 / 127, channel %i', (_, pedal, channel) => {
+    const { engine, sink, advance } = setup(pedal);
+    expect(pedal.defaultChannel).toBe(channel);
+    click(engine, 'tap');
+    advance(500);
+    click(engine, 'tap');
+    expect(sink.take()).toEqual([cc(93, 127), cc(93, 127)]);
+    expect(engine.getState().values.s2).toBe(120);
+    engine.set('s4', 0);
+    sink.take();
+    engine.set('s3', 5);
+    expect(sink.take()).toEqual([cc(21, 5), cc(51, 127)]);
+    click(engine, 's1');
+    expect(sink.take()).toEqual([cc(102, 0)]);
+  });
+
+  it('has no toggle CCs: CC22 and CC23 are never sent', () => {
+    for (const pedal of [gravitas, warpedvinylhifi]) {
+      expect(pedal.controls.some((c) => c.cc === 22 || c.cc === 23)).toBe(false);
+      expect(pedal.face.format === 'classic' && pedal.face.toggles).toEqual([]);
+    }
+  });
+
+  it('LAG replaces VOLUME on CC15 of the HiFi', () => {
+    expect(warpedvinylhifi.controls.find((c) => c.cc === 15)?.label).toBe('LAG');
+    expect(warpedvinylmkii.controls.find((c) => c.cc === 15)?.label).toBe('VOLUME');
+  });
+});
+
+describe('Thermae', () => {
+  it('runaway is a momentary hold on CC24 with 127 / 0; slowdown mode is CC25 and never replayed', () => {
+    const { engine, sink, advance } = setup(thermae);
+    hold(engine, advance, 'tap');
+    engine.set('h1', 127);
+    expect(sink.take()).toEqual([cc(24, 127), cc(24, 0), cc(25, 127)]);
+    engine.sendAll();
+    expect(sink.take().some((m) => m.type === 'cc' && m.cc === 25)).toBe(false);
+  });
+
+  it('the MODULATION dip mirror relabels INT 1 / INT 2 and sends nothing', () => {
+    const { engine, sink } = setup(thermae);
+    const label = (id: string) => {
+      const c = engine.control(id);
+      return c?.kind === 'knob' ? c.labelFor?.(engine.getState().values) : undefined;
+    };
+    expect(label('k5')).toBeUndefined();
+    engine.set('m1', 1);
+    expect(sink.take()).toEqual([]);
+    expect(label('k5')).toBe('SPEED');
+    expect(label('k6')).toBe('DEPTH');
+  });
+
+  it('tap LED turns green in slowdown mode and while runaway is held', () => {
+    const { engine, advance } = setup(thermae);
+    expect(thermae.leds(engine.getState())[0]).toEqual({ color: 'red', blinkMs: 500 });
+    engine.set('h1', 127);
+    expect(thermae.leds(engine.getState())[0]).toEqual({ color: 'green' });
+    engine.set('h1', 0);
+    engine.pressStart('tap');
+    advance(700);
+    expect(thermae.leds(engine.getState())[0]).toEqual({ color: 'green' });
+    engine.pressEnd('tap');
+  });
+});
+
+describe('Dark World', () => {
+  it('both channels travel in CC103: 127 both, 85 Dark, 45 World, 0 none', () => {
+    const { engine, sink } = setup(darkworld);
+    click(engine, 's2'); // World off
+    expect(sink.take()).toEqual([cc(103, 85)]);
+    click(engine, 's1'); // Dark off
+    expect(sink.take()).toEqual([cc(103, 0)]);
+    click(engine, 's2');
+    expect(sink.take()).toEqual([cc(103, 45)]);
+    click(engine, 's1');
+    expect(sink.take()).toEqual([cc(103, 127)]);
+    expect(darkworld.controls.some((c) => c.cc === 102)).toBe(false);
+  });
+
+  it('DECAY and MODIFY explain themselves per Dark program; pre-delay reads in ms', () => {
+    const { engine } = setup(darkworld);
+    const detail = (id: string) => {
+      const c = engine.control(id);
+      return c?.kind === 'knob' ? c.detail?.(engine.getState().values) : undefined;
+    };
+    expect(detail('k1')).toBe('Reverb decay');
+    engine.set('t1', 2);
+    expect(detail('k4')).toBe('Octave mix: down · none · up');
+    engine.set('t1', 3);
+    expect(detail('k1')).toBe('Freeze threshold');
+    const k6 = engine.control('k6');
+    expect(k6?.kind === 'knob' && k6.readout?.(127, engine.getState().values)?.label).toBe('≈ 200 ms');
+  });
+});
+
+describe('Tonal Recall', () => {
+  it('clock divisions are the six manual values on CC21 and switch the clock on', () => {
+    const { engine, sink } = setup(tonalrecall);
+    expect(TR_DIVISIONS.map((d) => d.label)).toEqual(['Quarter', 'Dotted 8th', '8th triplet', 'Eighth', '8th sextolet', 'Sixteenth']);
+    engine.set('s4', 0);
+    sink.take();
+    engine.set('s3', 4);
+    expect(sink.take()).toEqual([cc(21, 4), cc(51, 127)]);
+  });
+
+  it('the RKM mirror changes the look and the TIME readout without sending anything', () => {
+    const { engine, sink } = setup(tonalrecall);
+    const k4 = engine.control('k4');
+    const detail = () => (k4?.kind === 'knob' ? k4.detail?.(engine.getState().values) : undefined);
+    expect(detail()).toBe('Up to 550 ms');
+    expect(tonalrecall.themeFor?.(engine.getState().values)).toBeUndefined();
+    engine.set('m1', 1);
+    expect(sink.take()).toEqual([]);
+    expect(detail()).toBe('Up to 1100 ms');
+    expect(tonalrecall.themeFor?.(engine.getState().values)).toMatchObject({ knob: expect.any(String) });
+  });
+
+  it('has no CC for the toggles or the runaway hold', () => {
+    expect(tonalrecall.controls.some((c) => c.cc === 22 || c.cc === 23)).toBe(false);
+    expect(tonalrecall.face.footswitches[0].hold).toBeUndefined();
+  });
+});
+
+describe('Bliss Factory', () => {
+  it('AUX is the left footswitch on CC101, bypass the right on CC102', () => {
+    const { engine, sink } = setup(blissfactory);
+    click(engine, 's2');
+    click(engine, 's2');
+    click(engine, 's1');
+    expect(sink.take()).toEqual([cc(101, 1), cc(101, 0), cc(102, 0)]);
+    expect(blissfactory.leds(engine.getState())).toEqual([{ color: 'off' }, { color: 'off' }, { color: 'off' }]);
+  });
+
+  it('DRIVE warns while COMP is fully up; no tap, no clock', () => {
+    const { engine } = setup(blissfactory);
+    const k4 = engine.control('k4');
+    const detail = () => (k4?.kind === 'knob' ? k4.detail?.(engine.getState().values) : undefined);
+    expect(detail()).toBeUndefined();
+    engine.set('k3', 127);
+    expect(detail()).toBe('No effect while COMP is fully up');
+    expect(blissfactory.tap).toBeUndefined();
+    expect(blissfactory.controls.some((c) => c.cc === 51 || c.cc === 93)).toBe(false);
   });
 });

@@ -174,3 +174,19 @@ Connection: 5-pin MIDI cable from the interface's MIDI OUT straight into MIDI IN
       +12 dB (CC38–41) reach the pedal
 - [ ] Options menu CC42–48 and tap subdivision CC54; MIDI clock CC110 (not in MOD mode); MIDI notes CC112
 - [ ] Save to current slot (CC28); is PC 126 the last valid slot, or does PC 127 work too?
+
+## Older analog pedals (Thermae, Dark World, Tonal Recall, Bliss Factory, Condor, Gravitas, Warped Vinyl HiFi)
+
+Their MIDI manuals are one-pagers: no dip switch CCs, mostly no toggle CCs. The editors send only what is printed.
+
+- [ ] Gravitas answers on **channel 4**, Warped Vinyl HiFi on **channel 6** by default (the editor starts there)
+- [ ] Condor / Condor HiFi / Dark World: the two footswitch states go out as one CC103 value (0 / 45 / 85 / 127; HiFi
+      15 / 45 / 75 / 110) — check all four combinations land in the right state on the pedal
+- [ ] Condor HiFi toggles: values 1 / 2 / 3 select left / middle / right (manual prints "0, 1 / 2 / 3 or more")
+- [ ] Thermae: hold TAP on screen = runaway (CC24 127 / 0); SLOWDOWN switch (CC25) halves the sequencer; the three
+      toggles move with CC21–23 whatever mode the pedal is in
+- [ ] Tonal Recall RKM: same mapping as the Tonal Recall (no RKM MIDI manual exists) — confirm CC14–21, 51, 93, 102
+- [ ] Bliss Factory: AUX footswitch = CC101 1 / 0; the AuxPol dip reverses the direction on the pedal, not in the editor
+- [ ] Dark World: CC23 value 1 = Spring, 3 = Hall (panel prints SPRING · PLATE · HALL left to right)
+- [ ] Clock divisions (CC21) on Gravitas / Warped Vinyl HiFi / Tonal Recall: the editor switches clock listening on
+      (CC51 = 127) with the first division you pick
