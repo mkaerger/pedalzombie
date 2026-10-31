@@ -42,6 +42,8 @@ export function AutomatoneFace({ face }: { face: AutomatoneFaceDef }) {
   const faders = layer(face.faders, face.alt?.faders);
   const buttons = layer(face.buttons, face.alt?.buttons);
   const slotText = face.display ?? String;
+  // with an alt layer every column gets the caption row, empty or not, so the widgets line up
+  const caption = (sub: string | undefined) => face.alt && <span className="automatone__sub">{sub ?? ' '}</span>;
 
   return (
     <section className="pedal pedal--automatone" aria-label={`${name} controls`}>
@@ -64,7 +66,7 @@ export function AutomatoneFace({ face }: { face: AutomatoneFaceDef }) {
         {faders.map(({ id, sub }) => (
           <div className="automatone__col" key={id}>
             <ControlView id={id} size="lg" />
-            {sub && <span className="automatone__sub">{sub}</span>}
+            {caption(sub)}
           </div>
         ))}
       </div>
@@ -73,7 +75,7 @@ export function AutomatoneFace({ face }: { face: AutomatoneFaceDef }) {
         {buttons.map(({ id, sub }) => (
           <div className="automatone__col" key={id}>
             <ControlView id={id} size="lg" />
-            {sub && <span className="automatone__sub">{sub}</span>}
+            {caption(sub)}
           </div>
         ))}
       </div>
