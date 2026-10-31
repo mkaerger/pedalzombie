@@ -25,9 +25,17 @@ import { warpedvinylhifi } from './warpedvinylhifi';
 import { warpedvinylmkii } from './warpedvinylmkii';
 import { billystringswombtone, wombtonemkii } from './wombtone';
 
+/** Pedals whose MIDI map reaches the dip switches: the newer generation, listed first. */
+export const hasDipSwitches = (pedal: PedalDefinition): boolean =>
+  pedal.sections.some((section) => section.blocks.some((block) => block.type === 'dips'));
+
 const newestFirst = (a: PedalDefinition, b: PedalDefinition) => b.released.localeCompare(a.released);
 
-/** All editors, newest pedal first (home page order). */
+/** Dip-switch pedals before the older ones (and reissues of them), newest first within each group. */
+const homeOrder = (a: PedalDefinition, b: PedalDefinition) =>
+  Number(hasDipSwitches(b)) - Number(hasDipSwitches(a)) || newestFirst(a, b);
+
+/** All editors in home page order. */
 export const pedals: PedalDefinition[] = [
   badmood,
   bigtime,
@@ -56,9 +64,9 @@ export const pedals: PedalDefinition[] = [
   warpedvinylmkii,
   wombtonemkii,
   billystringswombtone,
-].sort(newestFirst);
+].sort(homeOrder);
 
-/** The compact pedals and the Automatone series, each newest first. */
+/** The compact pedals and the Automatone series, each in home page order. */
 export const classicPedals = pedals.filter((p) => p.face.format === 'classic');
 export const automatonePedals = pedals.filter((p) => p.face.format === 'automatone');
 

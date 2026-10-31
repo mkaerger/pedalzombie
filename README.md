@@ -15,20 +15,20 @@ save presets, store them on the pedal. No install, no account, nothing leaves yo
 | Reverse Mode C | [/reversemodec-editor/](https://pedalzombie.com/reversemodec-editor/) |
 | MOOD MKII | [/moodmkii-editor/](https://pedalzombie.com/moodmkii-editor/) |
 | Generation Loss MKII | [/generationloss-editor/](https://pedalzombie.com/generationloss-editor/) |
-| Habit | [/habit-editor/](https://pedalzombie.com/habit-editor/) |
-| Blooper | [/blooper-editor/](https://pedalzombie.com/blooper-editor/) |
-| MOOD | [/mood-editor/](https://pedalzombie.com/mood-editor/) |
 | Billy Strings Wombtone | [/billystringswombtone-editor/](https://pedalzombie.com/billystringswombtone-editor/) |
 | Condor HiFi | [/condorhifi-editor/](https://pedalzombie.com/condorhifi-editor/) |
+| Habit | [/habit-editor/](https://pedalzombie.com/habit-editor/) |
 | Bliss Factory | [/blissfactory-editor/](https://pedalzombie.com/blissfactory-editor/) |
+| Blooper | [/blooper-editor/](https://pedalzombie.com/blooper-editor/) |
+| MOOD | [/mood-editor/](https://pedalzombie.com/mood-editor/) |
 | Dark World | [/darkworld-editor/](https://pedalzombie.com/darkworld-editor/) |
 | Thermae | [/thermae-editor/](https://pedalzombie.com/thermae-editor/) |
 | Warped Vinyl HiFi | [/warpedvinylhifi-editor/](https://pedalzombie.com/warpedvinylhifi-editor/) |
 | Condor | [/condor-editor/](https://pedalzombie.com/condor-editor/) |
-| Tonal Recall / RKM | [/tonalrecall-editor/](https://pedalzombie.com/tonalrecall-editor/) |
-| Warped Vinyl MKII | [/warpedvinyl-editor/](https://pedalzombie.com/warpedvinyl-editor/) |
 | Spectre | [/spectre-editor/](https://pedalzombie.com/spectre-editor/) |
+| Tonal Recall / RKM | [/tonalrecall-editor/](https://pedalzombie.com/tonalrecall-editor/) |
 | Wombtone MKII | [/wombtonemkii-editor/](https://pedalzombie.com/wombtonemkii-editor/) |
+| Warped Vinyl MKII | [/warpedvinyl-editor/](https://pedalzombie.com/warpedvinyl-editor/) |
 | Gravitas | [/gravitas-editor/](https://pedalzombie.com/gravitas-editor/) |
 
 Automatone series (motorized faders, 5-pin MIDI, no adapter needed):

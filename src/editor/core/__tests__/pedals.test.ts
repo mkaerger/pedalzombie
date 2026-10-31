@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { bounds, defaults, faceControlIds, hasOptions, messagesFor } from '../controls';
-import { pedals } from '../../../pedals';
+import { automatonePedals, classicPedals, hasDipSwitches, pedals } from '../../../pedals';
 import type { FootswitchAction, PedalDefinition } from '../types';
 
 const ROOT = fileURLToPath(new URL('../../../../', import.meta.url));
@@ -224,5 +224,33 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
     for (const cc of documented) {
       expect(sent.has(cc) || skipped.has(cc), `CC ${cc} is documented in ${pedal.midiReference} but never sent`).toBe(true);
     }
+  });
+});
+
+describe('home page order', () => {
+  const newestFirst = (list: PedalDefinition[]) => {
+    for (let i = 1; i < list.length; i++) {
+      expect(list[i - 1].released >= list[i].released, `${list[i - 1].name} before ${list[i].name}`).toBe(true);
+    }
+  };
+
+  it('lists the dip-switch pedals before the older ones, newest first within each group', () => {
+    const firstOld = classicPedals.findIndex((p) => !hasDipSwitches(p));
+    expect(firstOld).toBeGreaterThan(0);
+    expect(classicPedals.slice(0, firstOld).every(hasDipSwitches)).toBe(true);
+    expect(classicPedals.slice(firstOld).some(hasDipSwitches)).toBe(false);
+    newestFirst(classicPedals.slice(0, firstOld));
+    newestFirst(classicPedals.slice(firstOld));
+  });
+
+  it('lists the Automatone series newest first', () => {
+    expect(automatonePedals.length).toBe(3);
+    newestFirst(automatonePedals);
+  });
+
+  it('puts the 2024 reissues of old designs with the old pedals', () => {
+    const names = classicPedals.map((p) => p.name);
+    expect(names.indexOf('Condor HiFi')).toBeGreaterThan(names.indexOf('Generation Loss MKII'));
+    expect(names.indexOf('Billy Strings Wombtone')).toBeGreaterThan(names.indexOf('Generation Loss MKII'));
   });
 });
