@@ -770,6 +770,21 @@
   color: var(--muted);
 }
 
+.inline-form input.bpm-input {
+  flex: 0 0 6em;
+}
+
+.editor input[aria-invalid='true'] {
+  border-color: #ff6b61;
+  box-shadow: 0 0 0 3px rgb(255 107 97 / 0.18);
+}
+
+.field-error {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: #ff8a82;
+}
+
 .preset-list {
   list-style: none;
   margin: 12px 0 0;

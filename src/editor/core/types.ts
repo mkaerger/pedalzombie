@@ -290,15 +290,16 @@ export interface PedalDefinition {
     manualStoreHint?: string;
   };
 
-  /** Tap tempo. */
+  /** Tap tempo. A BPM can always be typed in; it is sent as two taps one beat apart. */
   tap?: {
     cc: number;
     value: number;
-    /**
-     * `value` control holding the tempo in BPM. When set, the tempo is part of
-     * presets and is sent to the pedal as two taps one beat apart.
-     */
+    /** `value` control holding the tempo in BPM. When set, the tempo is part of presets. */
     bpmControl?: string;
+    /** Only in some states, e.g. Big Time's CC103 is tap tempo in SHORT / LONG mode only. */
+    enabled?: (values: ControlValues) => boolean;
+    /** Shown while `enabled` is false. */
+    disabledHint?: string;
   };
 
   /** Named value sets ("ideas") applied with one click, e.g. HABIT modifiers. */

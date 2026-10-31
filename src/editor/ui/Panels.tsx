@@ -1,4 +1,5 @@
-import { useState, type SubmitEvent, type ReactNode } from 'react';
+import { useId, useState, type SubmitEvent, type ReactNode } from 'react';
+import { BPM_MAX, BPM_MIN, parseBpm } from '../core/engine';
 import type { PedalDefinition, Section } from '../core/types';
 import type { StoredPreset } from '../core/presets';
 import { ControlView } from './ControlView';
@@ -115,19 +116,67 @@ export function IdeasPanel() {
   );
 }
 
-export function ToolsPanel() {
+/** Tap button, current BPM and a validated BPM input — for every pedal with tap tempo. */
+export function TempoBlock() {
   const { engine } = useEditor();
   const { tapBpm, values } = useEngineState();
-  const { pedal } = engine;
-  const bpmId = pedal.tap?.bpmControl;
-  const [bpmInput, setBpmInput] = useState('');
+  const { tap } = engine.pedal;
+  const [input, setInput] = useState('');
+  const errorId = useId();
+  if (!tap) return null;
 
-  const submitBpm = (e: SubmitEvent<HTMLFormElement>) => {
+  const enabled = engine.tapEnabled;
+  const parsed = parseBpm(input);
+  const error = 'error' in parsed && input.trim() !== '' ? parsed.error : undefined;
+  const current = tap.bpmControl ? values[tap.bpmControl] : tapBpm;
+
+  const submit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const bpm = Number(bpmInput);
-    if (bpm >= 20 && bpm <= 300) engine.setTempo(bpm);
-    setBpmInput('');
+    if ('bpm' in parsed && engine.setTempo(parsed.bpm)) setInput('');
   };
+
+  return (
+    <div className="block">
+      <h3 className="block__title">Tempo</h3>
+      <div className="button-row">
+        <button type="button" className="button button--tap" disabled={!enabled} onPointerDown={() => enabled && engine.tap()}>
+          Tap
+        </button>
+        <span className="bpm" aria-live="polite">
+          {current ?? '–'} <small>BPM</small>
+        </span>
+        <form className="inline-form" onSubmit={submit} noValidate>
+          <input
+            type="text"
+            inputMode="numeric"
+            className="bpm-input"
+            placeholder="BPM"
+            aria-label="Set tempo in BPM"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? errorId : undefined}
+            disabled={!enabled}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+          />
+          <button type="submit" className="button" disabled={!enabled || 'error' in parsed}>
+            Set
+          </button>
+        </form>
+      </div>
+      {error && (
+        <p className="field-error" id={errorId} role="alert">
+          {error}
+        </p>
+      )}
+      {!enabled && tap.disabledHint && <p className="hint">{tap.disabledHint}</p>}
+      {enabled && !error && <p className="hint">Typed tempos are sent as two taps, {BPM_MIN}–{BPM_MAX} BPM.</p>}
+    </div>
+  );
+}
+
+export function ToolsPanel() {
+  const { engine } = useEditor();
+  const { pedal } = engine;
 
   return (
     <Panel title="Tools">
@@ -152,35 +201,7 @@ export function ToolsPanel() {
         </div>
       </div>
 
-      {pedal.tap && (
-        <div className="block">
-          <h3 className="block__title">Tempo</h3>
-          <div className="button-row">
-            <button type="button" className="button button--tap" onPointerDown={() => engine.tap()}>
-              Tap
-            </button>
-            <span className="bpm" aria-live="polite">
-              {(bpmId ? values[bpmId] : tapBpm) ?? '–'} <small>BPM</small>
-            </span>
-            {bpmId && (
-              <form className="inline-form" onSubmit={submitBpm}>
-                <input
-                  type="number"
-                  min={20}
-                  max={300}
-                  placeholder="BPM"
-                  aria-label="Set tempo in BPM"
-                  value={bpmInput}
-                  onChange={(e) => setBpmInput(e.target.value)}
-                />
-                <button type="submit" className="button">
-                  Set
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <TempoBlock />
     </Panel>
   );
 }

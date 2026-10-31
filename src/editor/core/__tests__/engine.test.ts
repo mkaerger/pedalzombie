@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { dip, knob, select, toggle, value } from '../controls';
 import type { ControlValues, PedalDefinition } from '../types';
+import { parseBpm } from '../engine';
 import { cc, pc, setup } from './helpers';
 
 const LED_OFF = { color: 'off' } as const;
@@ -195,6 +196,50 @@ describe('EditorEngine tempo', () => {
     engine.dispose();
     advance(1000);
     expect(sink.take()).toEqual([]);
+  });
+
+  it('a typed tempo works without a bpm control: two taps, BPM shown, nothing stored', () => {
+    const noBpmControl: PedalDefinition = { ...pedal, tap: { cc: 93, value: 127 } };
+    const { engine, sink, advance } = setup(noBpmControl);
+    expect(engine.setTempo(150)).toBe(true);
+    expect(sink.take()).toEqual([cc(93, 127)]);
+    advance(400);
+    expect(sink.take()).toEqual([cc(93, 127)]);
+    expect(engine.getState().tapBpm).toBe(150);
+    expect(engine.getState().values.bpm).toBe(120); // untouched default of the unused control
+  });
+
+  it('rejects tempos outside 20–300, fractions and pedals without tap', () => {
+    const { engine, sink } = setup(pedal);
+    for (const bad of [19, 301, 100.5, Number.NaN]) expect(engine.setTempo(bad)).toBe(false);
+    expect(sink.take()).toEqual([]);
+    expect(engine.setTempo(20)).toBe(true);
+    expect(engine.setTempo(300)).toBe(true);
+    const without = setup({ ...pedal, tap: undefined });
+    expect(without.engine.setTempo(120)).toBe(false);
+  });
+
+  it('tap and typed tempo are blocked while the pedal says tap is not available', () => {
+    const gated: PedalDefinition = { ...pedal, tap: { cc: 93, value: 127, enabled: (v) => v.t1 === 2 } };
+    const { engine, sink } = setup(gated);
+    expect(engine.tapEnabled).toBe(true);
+    engine.set('t1', 1);
+    sink.take();
+    expect(engine.tapEnabled).toBe(false);
+    engine.tap();
+    expect(engine.setTempo(120)).toBe(false);
+    expect(sink.take()).toEqual([]);
+  });
+});
+
+describe('parseBpm', () => {
+  it('accepts whole numbers in range and explains everything else', () => {
+    expect(parseBpm(' 120 ')).toEqual({ bpm: 120 });
+    expect(parseBpm('')).toEqual({ error: 'Enter a tempo in BPM' });
+    expect(parseBpm('fast')).toEqual({ error: 'Enter a number' });
+    expect(parseBpm('99.5')).toEqual({ error: 'Whole numbers only' });
+    expect(parseBpm('10')).toEqual({ error: 'Between 20 and 300 BPM' });
+    expect(parseBpm('301')).toEqual({ error: 'Between 20 and 300 BPM' });
   });
 });
 

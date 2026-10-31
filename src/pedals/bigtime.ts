@@ -271,7 +271,13 @@ export const bigtime: PedalDefinition = {
     recall: { first: 0, last: 126, program: (slot) => slot, label: 'Preset' },
   },
 
-  tap: { cc: 103, value: 127 },
+  // CC103 is tap tempo only in SHORT / LONG; in MOD it toggles motion, in LOOP it records
+  tap: {
+    cc: 103,
+    value: 127,
+    enabled: (v) => v.b3 === MODE.short || v.b3 === MODE.long,
+    disabledHint: 'Tap tempo works in SHORT and LONG mode. In MOD and LOOP the left footswitch does something else.',
+  },
 
   random: [
     { id: 'faders', label: 'Faders', controls: FADERS },

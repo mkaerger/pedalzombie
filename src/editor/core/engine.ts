@@ -42,6 +42,21 @@ const defaultSchedule = (fn: () => void, ms: number): Cancel => {
 /** Upper bound for onChange cascades — protects against rules that ping-pong. */
 const MAX_CASCADE = 32;
 
+/** Tempo a user may type in; the pedals' own ranges are narrower, but this keeps the two taps sensible. */
+export const BPM_MIN = 20;
+export const BPM_MAX = 300;
+
+/** Validate a typed tempo: a whole number within the range, or an explanation why not. */
+export function parseBpm(input: string): { bpm: number } | { error: string } {
+  const text = input.trim();
+  if (text === '') return { error: 'Enter a tempo in BPM' };
+  const n = Number(text);
+  if (!Number.isFinite(n)) return { error: 'Enter a number' };
+  if (!Number.isInteger(n)) return { error: 'Whole numbers only' };
+  if (n < BPM_MIN || n > BPM_MAX) return { error: `Between ${BPM_MIN} and ${BPM_MAX} BPM` };
+  return { bpm: n };
+}
+
 export class EditorEngine {
   private state: EngineState;
   private readonly listeners = new Set<() => void>();
@@ -183,9 +198,15 @@ export class EditorEngine {
 
   // -- tempo ----------------------------------------------------------------
 
+  /** Whether the tap CC means tap tempo right now (see `tap.enabled`). */
+  get tapEnabled(): boolean {
+    const tap = this.pedal.tap;
+    return !!tap && (!tap.enabled || tap.enabled(this.state.values));
+  }
+
   tap() {
     const tap = this.pedal.tap;
-    if (!tap) return;
+    if (!tap || !this.tapEnabled) return;
     this.onEvent('tap');
     this.sink.send({ type: 'cc', cc: tap.cc, value: tap.value });
     const bpm = this.tapTempo.tap(this.now());
@@ -195,17 +216,23 @@ export class EditorEngine {
     this.update(patch);
   }
 
-  /** Set the tempo from a number input; sent as two taps one beat apart. */
-  setTempo(bpm: number) {
-    const id = this.pedal.tap?.bpmControl;
-    if (!id) return;
+  /**
+   * Set the tempo from a number input; sent as two taps one beat apart. With a
+   * bpm control the tempo also becomes part of the state (and presets).
+   * Returns false for an invalid tempo or when tapping is not possible right now.
+   */
+  setTempo(bpm: number): boolean {
+    const tap = this.pedal.tap;
+    if (!tap || !this.tapEnabled || !Number.isInteger(bpm) || bpm < BPM_MIN || bpm > BPM_MAX) return false;
     this.onEvent('set_tempo');
-    this.apply({ [id]: bpm }, 'all');
+    if (tap.bpmControl) this.apply({ [tap.bpmControl]: bpm }, 'all');
+    else this.sendTempo(bpm);
+    return true;
   }
 
   private sendTempo(bpm: number) {
     const tap = this.pedal.tap;
-    if (!tap || bpm <= 0) return;
+    if (!tap || bpm <= 0 || !this.tapEnabled) return;
     this.cancelTempo?.();
     const msg: MidiMessage = { type: 'cc', cc: tap.cc, value: tap.value };
     this.sink.send(msg);
