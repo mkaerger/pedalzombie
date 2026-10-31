@@ -982,6 +982,12 @@
   min-width: 0;
 }
 
+/* button columns stretch to the row, the alt caption stays under the button */
+.automatone__buttons .automatone__col {
+  grid-template-rows: 1fr auto;
+  align-content: stretch;
+}
+
 .automatone__sub {
   font: 500 0.54rem/1.1 var(--font);
   letter-spacing: 0.03em;
@@ -1170,11 +1176,17 @@
 /* -- arcade button -------------------------------------------------------- */
 
 .arcade {
+  /* the state names take whatever height the row has, so every button in a row sits on the same line */
   display: grid;
+  grid-template-rows: 1fr auto auto;
   justify-items: center;
-  align-content: end;
   gap: 8px;
   min-width: 0;
+  height: 100%;
+}
+
+.arcade__states {
+  align-self: end;
 }
 
 .arcade__states {
@@ -1275,8 +1287,8 @@
   text-transform: uppercase;
 }
 
-.panel .arcade {
-  align-content: start;
+.grid:has(> .arcade) {
+  align-items: stretch;
 }
 
 .led--purple {
