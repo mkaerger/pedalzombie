@@ -20,6 +20,14 @@ save presets, store them on the pedal. No install, no account, nothing leaves yo
 | MOOD | [/mood-editor/](https://pedalzombie.com/mood-editor/) |
 | Warped Vinyl MKII | [/warpedvinyl-editor/](https://pedalzombie.com/warpedvinyl-editor/) |
 
+Automatone series (motorized faders, 5-pin MIDI, no adapter needed):
+
+| Pedal | Editor |
+|---|---|
+| Big Time | [/bigtime-editor/](https://pedalzombie.com/bigtime-editor/) |
+| CXM 1978 | [/cxm1978-editor/](https://pedalzombie.com/cxm1978-editor/) |
+| Preamp MKII | [/preampmkii-editor/](https://pedalzombie.com/preampmkii-editor/) |
+
 Every MIDI mapping was transcribed from the official Chase Bliss manuals and is checked by tests
 (see [docs/midi](docs/midi)). Works in Chrome, Edge and Opera — the browsers that support Web MIDI.
 

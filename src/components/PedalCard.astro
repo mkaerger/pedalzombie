@@ -7,16 +7,35 @@ interface Props {
 
 const { pedal } = Astro.props;
 const { theme } = pedal;
+const automatone = pedal.face.format === 'automatone';
 const style = `--body:${theme.body};--ink:${theme.ink};--knob:${theme.knob};--accent:${theme.accent}`;
 ---
 
-<a class="card" href={`/${pedal.slug}/`} style={style}>
+<a class:list={['card', { 'card--automatone': automatone }]} href={`/${pedal.slug}/`} style={style}>
   <div class="card__pedal" aria-hidden="true">
-    <div class="card__knobs">
-      {Array.from({ length: 6 }, () => <span />)}
-    </div>
-    <span class="card__name">{pedal.name}</span>
-    <div class="card__feet"><span /><span /></div>
+    {
+      automatone ? (
+        <>
+          <div class="card__faders">
+            {Array.from({ length: 6 }, (_, i) => (
+              <span style={`--pos:${[0.5, 0.65, 0.3, 0.55, 0.7, 0.4][i]}`} />
+            ))}
+          </div>
+          <div class="card__buttons">
+            {Array.from({ length: 5 }, () => <span />)}
+          </div>
+          <div class="card__feet card__feet--automatone"><span /><i /><span /></div>
+        </>
+      ) : (
+        <>
+          <div class="card__knobs">
+            {Array.from({ length: 6 }, () => <span />)}
+          </div>
+          <span class="card__name">{pedal.name}</span>
+          <div class="card__feet"><span /><span /></div>
+        </>
+      )
+    }
   </div>
   <div class="card__text">
     <h3>{pedal.name}</h3>
@@ -80,6 +99,71 @@ const style = `--body:${theme.body};--ink:${theme.ink};--knob:${theme.knob};--ac
     border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, #f4f4f4, #8b8b90);
   }
+
+  /* Automatone: wider box with wooden cheeks, six faders, five buttons, a display between the feet */
+  .card--automatone .card__pedal {
+    aspect-ratio: 0.88;
+    align-self: center;
+    padding: 10px 8px 8px;
+    border-radius: 5px;
+    border-left: 7px solid #8a5a2b;
+    border-right: 7px solid #8a5a2b;
+    border-image: linear-gradient(90deg, #a06a33, #6e4420 8%, #9c6630 12%, #7a4b22 88%, #a56f38 92%, #6b411f) 1;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.12), transparent 40%), var(--body);
+  }
+  .card__faders {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    justify-items: center;
+    height: 44px;
+  }
+  .card__faders span {
+    position: relative;
+    width: 2px;
+    height: 100%;
+    background: rgb(0 0 0 / 0.55);
+  }
+  .card__faders span::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--pos) * 34px);
+    width: 9px;
+    height: 10px;
+    translate: -50% 0;
+    border-radius: 1.5px;
+    background: var(--knob);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  }
+  .card__buttons {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    justify-items: center;
+    padding: 0 2px;
+  }
+  .card__buttons span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fafafa, #9a9b9f);
+    box-shadow: 0 0 0 1.5px rgb(0 0 0 / 0.25);
+  }
+  .card__feet--automatone {
+    align-items: center;
+    padding: 0 2px;
+  }
+  .card__feet--automatone span {
+    width: 16px;
+    height: 16px;
+  }
+  .card__feet--automatone i {
+    width: 9px;
+    height: 13px;
+    border-radius: 1.5px;
+    background: #15090a;
+    box-shadow: inset 0 0 3px #ff3b30;
+  }
+
   .card__text h3 {
     margin: 0.2rem 0 0.4rem;
     font-size: 1.3rem;

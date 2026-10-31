@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import PedalCard from '../components/PedalCard.astro';
 import SetupChain from '../components/SetupChain.astro';
-import { pedals } from '../pedals';
+import { automatonePedals, classicPedals } from '../pedals';
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -38,7 +38,21 @@ const jsonLd = {
   <section class="wrap" id="editors" aria-labelledby="editors-title">
     <h2 id="editors-title">Editors</h2>
     <div class="cards">
-      {pedals.map((pedal) => <PedalCard pedal={pedal} />)}
+      {classicPedals.map((pedal) => <PedalCard pedal={pedal} />)}
+    </div>
+  </section>
+
+  <section class="wrap automatone" id="automatone" aria-labelledby="automatone-title">
+    <div class="automatone__head">
+      <p class="eyebrow">Automatone series</p>
+      <h2 id="automatone-title">The big ones</h2>
+      <p class="muted">
+        Motorized faders, arcade buttons and a display instead of knobs and toggles. They take a plain 5-pin MIDI
+        cable straight from your interface, no MIDI box needed, and every fader you move on screen moves on the pedal.
+      </p>
+    </div>
+    <div class="cards">
+      {automatonePedals.map((pedal) => <PedalCard pedal={pedal} />)}
     </div>
   </section>
 
@@ -47,7 +61,8 @@ const jsonLd = {
     <SetupChain />
     <p class="muted">
       Your browser talks to the pedal through Web MIDI. Nothing is installed and nothing leaves your computer — presets are
-      saved in your browser. <a href="/setup/">Full setup guide →</a>
+      saved in your browser. The Automatone pedals skip the adapter and take the 5-pin cable directly.{' '}
+      <a href="/setup/">Full setup guide →</a>
     </p>
   </section>
 </Base>
@@ -97,6 +112,21 @@ const jsonLd = {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
     gap: 1rem;
+  }
+  .automatone {
+    margin-top: clamp(2.5rem, 6vw, 4rem);
+    padding-top: clamp(2rem, 5vw, 3rem);
+    border-top: 1px solid var(--line);
+  }
+  .automatone__head {
+    max-width: 62ch;
+    margin-bottom: 1.5rem;
+  }
+  .automatone__head h2 {
+    margin-top: 0.2rem;
+  }
+  .automatone__head .muted {
+    margin: 0;
   }
   .how {
     margin-top: clamp(3rem, 8vw, 5rem);
