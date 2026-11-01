@@ -68,7 +68,7 @@ export default function Editor({ slug }: { slug: string }) {
 
   return (
     <EditorContext.Provider value={services}>
-      <div className="editor" style={style}>
+      <div className={`editor editor--${engine.pedal.face.format}`} style={style}>
         <MidiBar />
         <div className="editor__layout">
           <div className="editor__face">

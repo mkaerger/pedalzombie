@@ -4,19 +4,30 @@ import type { PedalDefinition, Section } from '../core/types';
 import type { StoredPreset } from '../core/presets';
 import { ControlView } from './ControlView';
 import { useEditor, useEngineState, useMidiState } from './context';
+import { usePanelCollapsed } from './usePanelCollapsed';
 
-export function Panel({ title, children, className = '' }: { title: string; children: ReactNode; className?: string }) {
+/** A panel folds away by its title; what is folded is remembered per pedal, so the page can shrink to what you use. */
+export function Panel({ id, title, children, className = '' }: { id: string; title: string; children: ReactNode; className?: string }) {
+  const { engine } = useEditor();
+  const [collapsed, toggle] = usePanelCollapsed(engine.pedal.storageKey, id);
+  const bodyId = useId();
   return (
-    <section className={`panel ${className}`}>
-      <h2 className="panel__title">{title}</h2>
-      {children}
+    <section className={`panel ${className}${collapsed ? ' is-collapsed' : ''}`}>
+      <h2 className="panel__title">
+        <button type="button" className="panel__toggle" aria-expanded={!collapsed} aria-controls={bodyId} onClick={toggle}>
+          {title}
+        </button>
+      </h2>
+      <div id={bodyId} className="panel__body" hidden={collapsed}>
+        {children}
+      </div>
     </section>
   );
 }
 
 export function SectionPanel({ section }: { section: Section }) {
   return (
-    <Panel title={section.title}>
+    <Panel id={section.id} title={section.title}>
       {section.blocks.map((b, i) => {
         switch (b.type) {
           case 'controls':
@@ -98,7 +109,7 @@ export function IdeasPanel() {
   const ideas = engine.pedal.ideas;
   if (!ideas?.length) return null;
   return (
-    <Panel title="Quick settings">
+    <Panel id="ideas" title="Quick settings">
       {ideas.map((group) => (
         <div key={group.title} className="block">
           <h3 className="block__title">{group.title}</h3>
@@ -179,7 +190,7 @@ export function ToolsPanel() {
   const { pedal } = engine;
 
   return (
-    <Panel title="Tools">
+    <Panel id="tools" title="Tools">
       <div className="block">
         <h3 className="block__title">Randomize</h3>
         <div className="button-row">
@@ -254,7 +265,7 @@ export function PresetsPanel() {
   };
 
   return (
-    <Panel title="Presets">
+    <Panel id="presets" title="Presets">
       <div className="block">
         <h3 className="block__title">In this browser</h3>
         <form className="inline-form" onSubmit={save}>
