@@ -573,6 +573,97 @@
   color: var(--muted);
 }
 
+/* -- locks (keep a control out of Randomize) ------------------------------ */
+
+.lockable {
+  position: relative;
+  min-width: 0;
+}
+
+.lock {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.lock svg {
+  width: 11px;
+  height: 11px;
+  fill: currentColor;
+}
+
+.lock__shackle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  transition: translate 0.15s, rotate 0.15s;
+  transform-origin: 11px 7px;
+}
+
+.lock:not(.is-locked) .lock__shackle {
+  translate: 0 -1.5px;
+  rotate: -25deg;
+}
+
+.lockable:hover .lock,
+.lockable:focus-within .lock,
+.lock:focus-visible,
+.lock.is-locked {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .lock {
+    opacity: 0.55;
+  }
+}
+
+.lock.is-locked {
+  color: var(--pedal-accent, var(--brand));
+  border-color: currentColor;
+}
+
+.lock:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* dip rows: the lock sits at the end of the row, vertically centred */
+.lockable--switch .lock {
+  top: 50%;
+  right: 0;
+  translate: 0 -50%;
+}
+
+/* on the pedal face the lock sits inside the knob's corner */
+.pedal .lockable--knob .lock,
+.pedal .lockable--toggle .lock {
+  top: 0;
+  right: 0;
+  background: rgb(0 0 0 / 0.35);
+  border-color: transparent;
+  color: var(--pedal-ink);
+}
+
+.pedal .lock.is-locked {
+  color: var(--pedal-accent);
+  background: rgb(0 0 0 / 0.5);
+}
+
 /* -- dip switches / switch ------------------------------------------------ */
 
 .dips {

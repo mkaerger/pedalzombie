@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cc, MemoryStorage, pc, setup } from '../../editor/core/__tests__/helpers';
 import { PresetStore } from '../../editor/core/presets';
+import { pedals } from '..';
 import { describeSlot, nextBank, nextPreset } from '../automatone';
 import { badmood, FLIP_CHORDS } from '../badmood';
 import { bigtime, SUBDIVISIONS } from '../bigtime';
@@ -940,5 +941,16 @@ describe('Spectre and Wombtone', () => {
   it('both Wombtones share knobs and differ only in channel and look', () => {
     expect(wombtonemkii.controls.map((c) => c.label)).toEqual(billystringswombtone.controls.map((c) => c.label));
     expect(wombtonemkii.theme.body).not.toBe(billystringswombtone.theme.body);
+  });
+});
+
+describe('Randomize locks', () => {
+  it('keeps MISO out of Randomize by default on every pedal that has it', () => {
+    const withMiso = pedals.filter((p) => p.controls.some((c) => c.label === 'MISO'));
+    expect(withMiso.length).toBe(8);
+    for (const p of withMiso) {
+      const miso = p.controls.find((c) => c.label === 'MISO')!;
+      expect(p.lockedByDefault, p.name).toContain(miso.id);
+    }
   });
 });

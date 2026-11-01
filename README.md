@@ -65,7 +65,7 @@ docs/            hardware test checklist
 ```
 
 A pedal is **data**. `src/pedals/<pedal>.ts` declares its knobs, toggles, dip switches, footswitches (press and
-hold), hidden options, presets, tap tempo and LEDs. The engine knows nothing about specific pedals: all value changes
+hold), hidden options, presets, tap tempo, LEDs and which controls Randomize leaves alone by default. The engine knows nothing about specific pedals: all value changes
 go through one path (`coerce → rules → commit → send MIDI once per CC`), and the UI renders whatever the definition
 says. Adding a pedal means adding one file — the page, the home page card and the consistency tests come for free.
 

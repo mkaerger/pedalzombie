@@ -312,6 +312,11 @@ export interface PedalDefinition {
 
   /** Randomize buttons. */
   random: RandomGroup[];
+  /**
+   * Controls that Randomize leaves alone until the user unlocks them, e.g. MISO:
+   * a global routing choice nobody wants flipped while hunting for sounds.
+   */
+  lockedByDefault?: string[];
 
   /** One-shot commands. With `confirm` the UI asks first (factory reset); without it fires immediately (retrigger). */
   commands?: {

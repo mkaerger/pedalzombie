@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { dip, knob, select, toggle, value } from '../controls';
 import type { ControlValues, PedalDefinition } from '../types';
-import { parseBpm } from '../engine';
+import { EditorEngine, parseBpm } from '../engine';
 import { cc, pc, setup } from './helpers';
 
 const LED_OFF = { color: 'off' } as const;
@@ -90,6 +90,39 @@ describe('EditorEngine values', () => {
     const high = setup(pedal, () => 0.9999);
     high.engine.randomize('knobs');
     expect(high.sink.take()).toEqual([cc(14, 127), cc(15, 127)]);
+  });
+});
+
+describe('EditorEngine locks', () => {
+  const memory = () => {
+    let saved: string[] | undefined;
+    return { load: () => saved, save: (ids: string[]) => (saved = ids), get saved() { return saved; } };
+  };
+
+  it('randomize leaves locked controls alone', () => {
+    const { engine, sink } = setup(pedal, () => 0);
+    engine.toggleLock('k1');
+    engine.randomize('knobs');
+    expect(sink.take()).toEqual([cc(15, 0)]);
+    expect(engine.getState().values.k1).toBe(pedal.controls.find((c) => c.id === 'k1')!.default);
+  });
+
+  it('starts from lockedByDefault, persists changes and ignores controls no group touches', () => {
+    const store = memory();
+    const sink = new (class { sent: unknown[] = []; send(m: unknown) { this.sent.push(m); } })();
+    const engine = new EditorEngine({ ...pedal, lockedByDefault: ['k2', 't1', 'nope'] }, sink, { locks: store });
+    expect([...engine.getState().locked]).toEqual(['k2']); // t1 is in no random group here
+    engine.toggleLock('t1');
+    expect(engine.getState().locked.has('t1')).toBe(false);
+    engine.toggleLock('k1');
+    expect(store.saved).toEqual(['k2', 'k1']);
+    engine.toggleLock('k2');
+    expect(store.saved).toEqual(['k1']);
+    engine.unlockAll();
+    expect(store.saved).toEqual([]);
+    // a later visit restores what was saved, not the defaults
+    const again = new EditorEngine({ ...pedal, lockedByDefault: ['k2'] }, sink, { locks: store });
+    expect(again.getState().locked.size).toBe(0);
   });
 });
 

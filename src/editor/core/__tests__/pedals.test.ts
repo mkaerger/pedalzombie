@@ -209,6 +209,11 @@ describe.each(pedals.map((p) => [p.name, p] as const))('%s definition', (_, peda
     expect(pedal.presets.toggle).toBe(false);
   });
 
+  it('locks by default only controls that Randomize would touch', () => {
+    const lockable = new Set(pedal.random.flatMap((g) => g.controls));
+    for (const id of pedal.lockedByDefault ?? []) expect(lockable.has(id), id).toBe(true);
+  });
+
   it('keeps the legacy storage key and editor URL', () => {
     expect(pedal.storageKey).toMatch(/^[a-z]+$/);
     expect(pedal.slug).toMatch(/-editor$/);

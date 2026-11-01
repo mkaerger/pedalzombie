@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useSyncExternalStore, type CSSProperties } from 'react';
 import { createTracker, watchMidi } from '../core/analytics';
 import { EditorEngine } from '../core/engine';
+import { LockStore } from '../core/locks';
 import { createWebMidiBackend, MidiConnection } from '../core/midi';
 import { PresetStore, type KeyValueStorage } from '../core/presets';
 import { pedalBySlug } from '../../pedals';
@@ -40,7 +41,7 @@ function useServices(slug: string): EditorServices {
     const track = createTracker(pedal.storageKey);
     return {
       midi,
-      engine: new EditorEngine(pedal, midi, { onEvent: track }),
+      engine: new EditorEngine(pedal, midi, { onEvent: track, locks: new LockStore(storage, `${pedal.storageKey}_locks`) }),
       presets: new PresetStore(pedal, storage),
       assets: `/pedals/${pedal.storageKey}`,
       track,

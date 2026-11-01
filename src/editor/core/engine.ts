@@ -1,4 +1,5 @@
 import { coerce, controlMap, defaults, messagesFor, randomValue, type Rng } from './controls';
+import type { LockPersistence } from './locks';
 import { TapTempo } from './tapTempo';
 import type {
   Control,
@@ -20,6 +21,8 @@ export interface EngineState {
   held: ReadonlySet<string>;
   preset: PresetActivity;
   tapBpm?: number;
+  /** Controls Randomize leaves alone. */
+  locked: ReadonlySet<string>;
 }
 
 type Cancel = () => void;
@@ -32,6 +35,8 @@ export interface EngineOptions {
   holdMs?: number;
   /** Semantic user actions (randomize, preset_load, footswitch, …) for analytics. */
   onEvent?: (name: string, params?: Record<string, string | number>) => void;
+  /** Where locks are kept between visits; without it they start from `pedal.lockedByDefault`. */
+  locks?: LockPersistence;
 }
 
 const defaultSchedule = (fn: () => void, ms: number): Cancel => {
@@ -70,6 +75,9 @@ export class EditorEngine {
   private readonly schedule: (fn: () => void, ms: number) => Cancel;
   private readonly holdMs: number;
   private readonly onEvent: NonNullable<EngineOptions['onEvent']>;
+  private readonly locks: LockPersistence | undefined;
+  /** Every control some Randomize button may touch — the only ones worth a lock. */
+  readonly lockable: ReadonlySet<string>;
 
   constructor(
     readonly pedal: PedalDefinition,
@@ -82,7 +90,10 @@ export class EditorEngine {
     this.schedule = options.schedule ?? defaultSchedule;
     this.holdMs = options.holdMs ?? 600;
     this.onEvent = options.onEvent ?? (() => {});
-    this.state = { values: defaults(pedal), held: new Set(), preset: { kind: 'live' } };
+    this.locks = options.locks;
+    this.lockable = new Set(pedal.random.flatMap((g) => g.controls));
+    const locked = (options.locks?.load() ?? pedal.lockedByDefault ?? []).filter((id) => this.lockable.has(id));
+    this.state = { values: defaults(pedal), held: new Set(), preset: { kind: 'live' }, locked: new Set(locked) };
   }
 
   // -- store ----------------------------------------------------------------
@@ -131,6 +142,7 @@ export class EditorEngine {
     this.apply(values, 'all');
   }
 
+  /** New values for every unlocked control of the group. */
   randomize(groupId: string) {
     const group = this.pedal.random.find((g) => g.id === groupId);
     if (!group) return;
@@ -138,9 +150,32 @@ export class EditorEngine {
     const values: ControlValues = {};
     for (const id of group.controls) {
       const c = this.controls.get(id);
-      if (c) values[id] = randomValue(c, this.rng);
+      if (c && !this.state.locked.has(id)) values[id] = randomValue(c, this.rng);
     }
     this.apply(values, 'all');
+  }
+
+  // -- locks ----------------------------------------------------------------
+
+  /** Keep (or stop keeping) a control out of Randomize. Ignored for controls no group touches. */
+  toggleLock(id: string) {
+    if (!this.lockable.has(id)) return;
+    const locked = new Set(this.state.locked);
+    if (locked.has(id)) locked.delete(id);
+    else locked.add(id);
+    this.onEvent(locked.has(id) ? 'lock' : 'unlock', { control: id });
+    this.setLocked(locked);
+  }
+
+  unlockAll() {
+    if (this.state.locked.size === 0) return;
+    this.onEvent('unlock_all');
+    this.setLocked(new Set());
+  }
+
+  private setLocked(locked: Set<string>) {
+    this.update({ locked });
+    this.locks?.save([...locked]);
   }
 
   /** Push the complete current state to the pedal, e.g. after connecting. */

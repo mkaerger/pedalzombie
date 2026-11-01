@@ -90,6 +90,7 @@ export const lossy: PedalDefinition = {
 
   presets: { store: { cc: 111, minSlot: 1, maxSlot: 122 } },
 
+  lockedByDefault: ['d9'], // MISO
   random: [
     { id: 'knobs', label: 'Knobs', controls: ['k1', 'k2', 'k3', 'k4', 'k5', 'k6'] },
     { id: 'toggles', label: 'Toggles', controls: ['t1', 't2', 't3'] },

@@ -189,6 +189,7 @@ export function ToolsPanel() {
             </button>
           ))}
         </div>
+        <LockSummary />
       </div>
 
       <div className="block">
@@ -203,6 +204,27 @@ export function ToolsPanel() {
 
       <TempoBlock />
     </Panel>
+  );
+}
+
+/** Which controls Randomize leaves alone, and how to change that. */
+export function LockSummary() {
+  const { engine } = useEditor();
+  const { locked } = useEngineState();
+  const names = [...locked].map((id) => engine.control(id)?.label ?? id);
+  return (
+    <p className="hint">
+      {names.length > 0 ? (
+        <>
+          Kept as they are: {names.join(', ')}.{' '}
+          <button type="button" className="link-button" onClick={() => engine.unlockAll()}>
+            Unlock all
+          </button>
+          {' · '}
+        </>
+      ) : null}
+      Click the lock on a control to keep it when randomizing.
+    </p>
   );
 }
 

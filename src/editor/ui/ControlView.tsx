@@ -1,6 +1,8 @@
+import type { Control } from '../core/types';
 import { ArcadeButton } from './ArcadeButton';
 import { useEditor, useEngineState } from './context';
 import { Knob } from './Knob';
+import { Lockable } from './Lock';
 import { MotorFader } from './MotorFader';
 import { Fader, Segmented, Switch, Toggle } from './widgets';
 
@@ -12,8 +14,16 @@ export function ControlView({ id, size }: { id: string; size?: 'lg' | 'md' }) {
   if (!c) return null;
   const value = values[id];
   const set = (v: number) => engine.set(id, v);
+  const label = ('labelFor' in c ? c.labelFor?.(values) : undefined) ?? c.label;
 
-  switch (c.kind) {
+  return (
+    <Lockable id={id} label={label} kind={c.kind}>
+      {widget(c)}
+    </Lockable>
+  );
+
+  function widget(c: Control) {
+    switch (c.kind) {
     case 'knob': {
       const readout = c.readout?.(value, values);
       return (
@@ -34,7 +44,7 @@ export function ControlView({ id, size }: { id: string; size?: 'lg' | 'md' }) {
       );
     }
     case 'fader': {
-      const label = c.labelFor?.(values) ?? c.label;
+      const label = ('labelFor' in c ? c.labelFor?.(values) : undefined) ?? c.label;
       if (size !== 'lg') {
         return (
           <Fader
@@ -82,4 +92,5 @@ export function ControlView({ id, size }: { id: string; size?: 'lg' | 'md' }) {
     case 'value':
       return null;
   }
+}
 }
