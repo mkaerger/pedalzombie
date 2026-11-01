@@ -5,6 +5,7 @@ import type { ArcadeOption } from '../../core/types';
 import { ArcadeButton } from '../ArcadeButton';
 import { Knob } from '../Knob';
 import { MotorFader } from '../MotorFader';
+import { Fader } from '../widgets';
 import { displayText } from '../AutomatoneFace';
 
 afterEach(cleanup);
@@ -81,15 +82,49 @@ describe('MotorFader', () => {
 });
 
 describe('Knob (shared drag behaviour)', () => {
-  it('scrolls only while focused and ignores wheel events otherwise', () => {
+  const setup = () => {
     const onChange = vi.fn();
     render(<Knob label="MIX" value={10} defaultValue={0} onChange={onChange} />);
     const dial = screen.getByRole('slider', { name: 'MIX' });
+    dial.setPointerCapture = () => {};
+    return { onChange, dial };
+  };
+
+  it('ignores the wheel until the control was clicked', () => {
+    const { onChange, dial } = setup();
+    fireEvent.wheel(dial, { deltaY: -1 });
+    dial.focus(); // focus alone (Tab, or a click long ago) is not enough
     fireEvent.wheel(dial, { deltaY: -1 });
     expect(onChange).not.toHaveBeenCalled();
-    dial.focus();
+    fireEvent.pointerDown(dial, { clientY: 100, pointerId: 1, button: 0 });
+    fireEvent.pointerUp(dial);
     fireEvent.wheel(dial, { deltaY: -1 });
     expect(onChange).toHaveBeenLastCalledWith(14);
+  });
+
+  it('hands the wheel back to the page once the pointer leaves, even while still focused', () => {
+    const { onChange, dial } = setup();
+    fireEvent.pointerDown(dial, { clientY: 100, pointerId: 1, button: 0 });
+    fireEvent.pointerUp(dial);
+    fireEvent.pointerLeave(dial);
+    expect(document.activeElement).toBe(dial);
+    fireEvent.wheel(dial, { deltaY: -1 });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('starts a drag only with the primary button', () => {
+    const { onChange, dial } = setup();
+    fireEvent.pointerDown(dial, { clientY: 100, pointerId: 1, button: 2 });
+    fireEvent.pointerMove(dial, { clientY: 50 });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('stops a drag when the pointer capture is lost', () => {
+    const { onChange, dial } = setup();
+    fireEvent.pointerDown(dial, { clientY: 100, pointerId: 1, button: 0 });
+    fireEvent.lostPointerCapture(dial);
+    fireEvent.pointerMove(dial, { clientY: 50 });
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
 
@@ -100,5 +135,15 @@ describe('displayText', () => {
     expect(displayText({ kind: 'recall', slot: 17, flip: false }, false, bank)).toBe('7');
     expect(displayText({ kind: 'store', slot: 3, at: 1 }, false, String)).toBe('3');
     expect(displayText({ kind: 'recall', slot: 17, flip: false }, true, bank)).toBe('A');
+  });
+});
+
+describe('Fader', () => {
+  it('captions both ends and shows the readout next to the value', () => {
+    render(<Fader label="RAMP SPEED" value={100} ends={['fast', 'slow']} readout="Slow" onChange={() => {}} />);
+    expect(screen.getByText('fast')).toBeTruthy();
+    expect(screen.getByText('slow')).toBeTruthy();
+    expect(screen.getByText('Slow')).toBeTruthy();
+    expect(screen.getByRole('slider', { name: /RAMP SPEED/ }).getAttribute('value')).toBe('100');
   });
 });

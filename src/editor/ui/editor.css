@@ -673,6 +673,20 @@
   letter-spacing: 0.06em;
 }
 
+.fader__readout {
+  margin-right: 0.6em;
+  color: var(--pedal-accent, var(--brand));
+}
+
+.fader__ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -2px;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  color: var(--muted);
+}
+
 .fader input {
   -webkit-appearance: none;
   appearance: none;

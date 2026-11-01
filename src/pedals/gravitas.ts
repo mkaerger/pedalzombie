@@ -1,6 +1,6 @@
-import { dip, fader, knob } from '../editor/core/controls';
+import { dip, knob } from '../editor/core/controls';
 import type { PedalDefinition } from '../editor/core/types';
-import { beatMs, CLOCK_TAP, clockControls, clockOnChange, clockSection, LED_OFF, presetLed } from './shared';
+import { beatMs, CLOCK_TAP, clockControls, clockOnChange, clockSection, LED_OFF, presetLed, rampSpeed } from './shared';
 
 // Reference: docs/midi/gravitas.md
 // Analog tremolo with a clean boost. The three toggles (tap division / mode, both wave shapes) and
@@ -24,7 +24,7 @@ export const gravitas: PedalDefinition = {
     knob('k4', 'RATE', 17, 64, { hint: 'Tap tempo and MIDI clock override it.' }),
     knob('k5', 'DEPTH', 18, 64),
     knob('k6', 'SWAY', 19, 64, { hint: 'Noon is a symmetric wave.' }),
-    fader('f1', 'RAMP', 20, 64),
+    rampSpeed(64, 'RAMP'),
 
     dip('s1', 'BYPASS', 102, 127, { on: 127 }),
     ...clockControls(120, 'tremolo period'),

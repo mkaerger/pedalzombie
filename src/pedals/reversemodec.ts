@@ -1,6 +1,6 @@
-import { dip, fader, knob, rangeOf, select, toggle } from '../editor/core/controls';
+import { dip, knob, rangeOf, select, toggle } from '../editor/core/controls';
 import type { ControlValues, LedState, PedalDefinition } from '../editor/core/types';
-import { beatMs, customizeDips, dipsSection, LED_OFF, presetLed, RAMP_WAVEFORMS, rampingDips } from './shared';
+import { beatMs, customizeDips, dipsSection, LED_OFF, presetLed, RAMP_WAVEFORMS, rampingDips, rampSpeed } from './shared';
 
 // Reference: docs/midi/reverse-mode-c.md
 
@@ -32,7 +32,7 @@ export const reversemodec: PedalDefinition = {
     knob('k4', 'OFFSET', 17, 64),
     knob('k5', 'BALANCE', 18, 64),
     knob('k6', 'FILTER', 19, 64),
-    fader('f1', 'RAMP SPEED', 20, 64),
+    rampSpeed(64),
 
     toggle('t1', 'MODULATION', 21, 2, ['Sync', 'Off', 'Free']),
     toggle('t2', 'MOD TYPE', 22, 1, ['Vib', 'Trem', 'Freq']),

@@ -1,5 +1,5 @@
-import { dip, select, value } from '../editor/core/controls';
-import type { Control, LedState, Option, PedalDefinition, PresetActivity, Section, SwitchControl, ValueRange } from '../editor/core/types';
+import { dip, fader, rangeOf, select, value } from '../editor/core/controls';
+import type { Control, FaderControl, LedState, Option, PedalDefinition, PresetActivity, Section, SwitchControl, ValueRange } from '../editor/core/types';
 
 export const LED_OFF: LedState = { color: 'off' };
 
@@ -95,6 +95,24 @@ export const clockControls = (tempo: number, period: string): Control[] => [
   value('s2', 'Tempo', tempo, { min: 20, max: 300 }),
   select('s3', 'MIDI clock division', 21, 3, NOTE_DIVISIONS_SIX, { hint: `Notes per ${period} when following MIDI clock.` }),
   dip('s4', 'MIDI CLOCK', 51, 127, { on: 127, offLabel: 'Ignore', onLabel: 'Listen' }),
+];
+
+/**
+ * CC20 on every pedal with ramping. Despite the name it is a time: the manuals show the ramp
+ * knob low = sweep done quickly, high = a long sweep ("Dip Switches 101"), so the fader is
+ * captioned fast → slow instead of pretending that right means faster.
+ */
+export const rampSpeed = (def = 64, label = 'RAMP SPEED'): FaderControl =>
+  fader('f1', label, 20, def, {
+    ends: ['fast', 'slow'],
+    hint: 'How long a ramp or bounce takes. Higher = slower, like the knob that becomes RAMP on the pedal.',
+    readout: (value) => rangeOf(RAMP_TIMES, value),
+  });
+
+const RAMP_TIMES: ValueRange[] = [
+  { from: 0, to: 31, label: 'Fast' },
+  { from: 32, to: 79, label: 'Medium' },
+  { from: 80, to: 127, label: 'Slow' },
 ];
 
 export const clockSection = (): Section => ({

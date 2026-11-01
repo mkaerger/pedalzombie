@@ -67,6 +67,8 @@ export interface FaderControl extends ControlBase, Annotated {
   kind: 'fader';
   min?: number;
   max?: number;
+  /** Captions at the low and high end, e.g. ['fast', 'slow'] for a time that is called a speed. */
+  ends?: [string, string];
 }
 
 export interface ArcadeOption extends Option {

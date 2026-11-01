@@ -1,6 +1,6 @@
-import { dip, fader, knob, toggle } from '../editor/core/controls';
+import { dip, knob, toggle } from '../editor/core/controls';
 import type { PedalDefinition } from '../editor/core/types';
-import { customizeDips, dipsSection, presetLed, rampingDips, RAMPING_IDS, switchLed } from './shared';
+import { customizeDips, dipsSection, presetLed, RAMPING_IDS, rampingDips, rampSpeed, switchLed } from './shared';
 
 // Reference: docs/midi/lossy.md
 
@@ -22,7 +22,7 @@ export const lossy: PedalDefinition = {
     knob('k4', 'FREQ', 17, 64),
     knob('k5', 'SPEED', 18, 64),
     knob('k6', 'LOSS', 19, 64),
-    fader('f1', 'RAMP SPEED', 20, 64),
+    rampSpeed(64),
 
     toggle('t1', 'SLOPE', 21, 2, ['6 dB', '24 dB', '96 dB']),
     toggle('t2', 'PACKETS', 22, 2, ['Repeat', 'Clean', 'Loss']),

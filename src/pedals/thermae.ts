@@ -1,6 +1,6 @@
-import { dip, fader, knob, toggle, value } from '../editor/core/controls';
+import { dip, knob, toggle, value } from '../editor/core/controls';
 import type { ControlValues, LedState, PedalDefinition, SwitchControl } from '../editor/core/types';
-import { beatMs, LED_OFF, presetLed } from './shared';
+import { beatMs, LED_OFF, presetLed, rampSpeed } from './shared';
 
 // Reference: docs/midi/thermae.md
 // Analog delay whose time is stepped by a two-interval sequencer. The 2018 MIDI manual documents knobs,
@@ -50,7 +50,7 @@ export const thermae: PedalDefinition = {
       labelFor: (v) => (modulation(v) ? 'DEPTH' : undefined),
       hint: 'Second interval, relative to INT 1. DEPTH with the MODULATION dip on.',
     }),
-    fader('f1', 'RAMP', 20, 64),
+    rampSpeed(64, 'RAMP'),
 
     toggle('t1', 'TAP DIVISION', 21, 3, STEP, { hint: 'Length of the base step. With both INT knobs at noon this is a plain tap subdivision.' }),
     toggle('t2', 'INT 1 STEP', 22, 3, STEP, { hint: 'Length of the INT 1 step. With the MODULATION dip on the same positions are Steady / Twitchy / Abrupt.' }),

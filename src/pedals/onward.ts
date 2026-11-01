@@ -1,6 +1,6 @@
-import { dip, fader, knob, rangeOf, select, toggle } from '../editor/core/controls';
+import { dip, knob, rangeOf, select, toggle } from '../editor/core/controls';
 import type { PedalDefinition, ValueRange } from '../editor/core/types';
-import { beatMs, customizeDips, dipsSection, LED_OFF, presetLed, rampingDips, RAMPING_IDS, switchLed } from './shared';
+import { beatMs, customizeDips, dipsSection, LED_OFF, presetLed, RAMPING_IDS, rampingDips, rampSpeed, switchLed } from './shared';
 
 // Reference: docs/midi/onward.md
 
@@ -36,7 +36,7 @@ export const onward: PedalDefinition = {
     knob('k4', 'ERROR', 17, 30),
     knob('k5', 'SUSTAIN', 18, 80),
     knob('k6', 'TEXTURE', 19, 64, { readout: (v) => rangeOf(TEXTURE, v) }),
-    fader('f1', 'RAMP SPEED', 20, 64),
+    rampSpeed(64),
 
     toggle('t1', 'ERROR TYPE', 21, 1, ['Timing', 'Condition', 'Playback']),
     toggle('t2', 'FADE', 22, 1, ['Slow', 'User', 'Fast'], { hint: 'Manual: LONG = left, SHORT = right.' }),

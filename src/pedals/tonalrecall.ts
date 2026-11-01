@@ -1,6 +1,6 @@
-import { dip, fader, knob, select, value } from '../editor/core/controls';
+import { dip, knob, select, value } from '../editor/core/controls';
 import type { PedalDefinition, SwitchControl } from '../editor/core/types';
-import { beatMs, clockOnChange, LED_OFF, presetLed } from './shared';
+import { beatMs, clockOnChange, LED_OFF, presetLed, rampSpeed } from './shared';
 
 // Reference: docs/midi/tonal-recall.md
 // Analog bucket-brigade delay. One editor for Tonal Recall and the RKM (Red Knob Mod, four chips,
@@ -48,7 +48,7 @@ export const tonalrecall: PedalDefinition = {
     }),
     knob('k5', 'REGEN', 18, 50),
     knob('k6', 'DEPTH', 19, 0, { hint: 'Modulation depth.' }),
-    fader('f1', 'RAMP', 20, 64),
+    rampSpeed(64, 'RAMP'),
 
     dip('s1', 'BYPASS', 102, 127, { on: 127 }),
     value('s2', 'Tempo', 120, { min: 20, max: 300 }),

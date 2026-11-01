@@ -1,6 +1,6 @@
-import { dip, fader, knob, rangeOf, toggle } from '../editor/core/controls';
+import { dip, knob, rangeOf, toggle } from '../editor/core/controls';
 import type { PedalDefinition, ValueRange } from '../editor/core/types';
-import { LED_OFF, presetLed } from './shared';
+import { LED_OFF, presetLed, rampSpeed } from './shared';
 
 // Reference: docs/midi/generation-loss-mkii.md
 
@@ -51,7 +51,7 @@ export const genlossmkii: PedalDefinition = {
     knob('k9', 'HISS', 27, 10),
     knob('k10', 'MECHANICAL NOISE', 28, 10),
     knob('k11', 'CRINKLE & POP', 29, 10),
-    fader('f1', 'RAMP SPEED', 20, 64),
+    rampSpeed(64),
     // CC26 is a threshold on the pedal: < 64 true bypass, > 64 DSP bypass
     dip('k8', 'BYPASS TYPE', 26, 127, { on: 127, offLabel: 'True bypass', onLabel: 'DSP bypass' }),
     toggle('g1', 'INPUT GAIN', 32, 1, ['Line', 'Instrument', 'High gain']),

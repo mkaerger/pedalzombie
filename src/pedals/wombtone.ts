@@ -1,6 +1,6 @@
-import { dip, fader, knob } from '../editor/core/controls';
+import { dip, knob } from '../editor/core/controls';
 import type { PedalDefinition, Theme } from '../editor/core/types';
-import { beatMs, CLOCK_TAP, clockControls, clockOnChange, clockSection, LED_OFF, presetLed } from './shared';
+import { beatMs, CLOCK_TAP, clockControls, clockOnChange, clockSection, LED_OFF, presetLed, rampSpeed } from './shared';
 
 // References: docs/midi/wombtone-mkii.md, docs/midi/billy-strings-wombtone.md
 // Analog phaser, 2 / 4 / 6 stages. Both versions share the old-style map (knobs, CC21 clock division,
@@ -39,7 +39,7 @@ function makeWombtone(variant: Variant): PedalDefinition {
       knob('k4', 'RATE', 17, 64, { hint: variant.rateHint }),
       knob('k5', 'DEPTH', 18, 64),
       knob('k6', 'FORM', 19, 64, { hint: 'Skew of the modulation wave. Noon is symmetric.' }),
-      fader('f1', 'RAMP', 20, 64),
+      rampSpeed(64, 'RAMP'),
 
       dip('s1', 'BYPASS', 102, 127, { on: 127 }),
       ...clockControls(120, 'phaser period'),

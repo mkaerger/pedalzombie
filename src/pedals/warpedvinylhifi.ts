@@ -1,6 +1,6 @@
-import { dip, fader, knob } from '../editor/core/controls';
+import { dip, knob } from '../editor/core/controls';
 import type { PedalDefinition } from '../editor/core/types';
-import { CLOCK_TAP, clockControls, clockOnChange, clockSection, knobBlinkMs, LED_OFF, presetLed } from './shared';
+import { CLOCK_TAP, clockControls, clockOnChange, clockSection, knobBlinkMs, LED_OFF, presetLed, rampSpeed } from './shared';
 
 // Reference: docs/midi/warped-vinyl-hifi.md
 // The model after the MKII: LAG replaces VOLUME on CC15, default channel 6. Toggles, dip switches
@@ -24,7 +24,7 @@ export const warpedvinylhifi: PedalDefinition = {
     knob('k4', 'RPM', 17, 64, { hint: 'Vibrato rate; tap tempo and MIDI clock override it.' }),
     knob('k5', 'DEPTH', 18, 64),
     knob('k6', 'WARP', 19, 64, { hint: 'Noon is a symmetric wave.' }),
-    fader('f1', 'RAMP', 20, 64),
+    rampSpeed(64, 'RAMP'),
 
     dip('s1', 'BYPASS', 102, 127, { on: 127 }),
     ...clockControls(60, 'vibrato period'),

@@ -16,6 +16,7 @@ Start: `npm run build && npm run preview`, open the editor in Chrome, **Connect 
 - [ ] App preset: save, reload page, load → pedal sounds the same; delete
 - [ ] A preset saved with the **old** editor (same browser profile) still loads
 - [ ] Randomize: each group changes only the expected controls
+- [ ] Ramp speed fader (CC20): value 0 = fastest sweep, 127 = slowest, as the "Dip Switches 101" guide shows for the ramp knob (editor captions fast → slow, UNVERIFIED on hardware)
 - [ ] Editor defaults resets everything
 - [ ] Sync pedal sends the full state
 - [ ] Footswitch click and hold (≥ 0.6 s) with mouse and on a touch screen

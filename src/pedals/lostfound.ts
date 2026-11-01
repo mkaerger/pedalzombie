@@ -1,6 +1,6 @@
-import { dip, fader, knob, select, toggle } from '../editor/core/controls';
+import { dip, knob, select, toggle } from '../editor/core/controls';
 import type { ControlValues, PedalDefinition } from '../editor/core/types';
-import { beatMs, customizeDips, dipsSection, presetLed, rampingDips, RAMPING_IDS, switchLed } from './shared';
+import { beatMs, customizeDips, dipsSection, presetLed, RAMPING_IDS, rampingDips, rampSpeed, switchLed } from './shared';
 
 // Reference: docs/midi/lost-found.md
 
@@ -74,7 +74,7 @@ export const lostfound: PedalDefinition = {
     toggle('t2', 'ROUTING', 22, 2, ['L > R', 'L + R', 'L < R'], { hint: 'Series left into right, parallel, series right into left.' }),
     toggle('t3', 'R EFFECT', 23, 1, ['4 Delay', '5 Synth', '6 Bend']),
 
-    fader('f1', 'RAMP SPEED', 20, 64),
+    rampSpeed(64),
     knob('k7', 'L ALT', 24, 64, { detail: detail('L', 'alt') }),
     knob('k8', 'SPILL', 25, 0, { hint: 'In series: apply the second effect to the dry signal too.' }),
     knob('k9', 'R ALT', 26, 64, { detail: detail('R', 'alt') }),

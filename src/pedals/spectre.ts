@@ -1,6 +1,6 @@
-import { dip, fader, knob } from '../editor/core/controls';
+import { dip, knob } from '../editor/core/controls';
 import type { PedalDefinition } from '../editor/core/types';
-import { beatMs, CLOCK_TAP, clockControls, clockOnChange, clockSection, LED_OFF, presetLed } from './shared';
+import { beatMs, CLOCK_TAP, clockControls, clockOnChange, clockSection, LED_OFF, presetLed, rampSpeed } from './shared';
 
 // Reference: docs/midi/spectre.md
 // Analog through-zero flanger. Old-style MIDI map: knobs, CC21 clock division, CC51 clock, CC93 tap,
@@ -24,7 +24,7 @@ export const spectre: PedalDefinition = {
     knob('k4', 'RATE', 17, 64, { hint: 'Tap tempo and MIDI clock override it.' }),
     knob('k5', 'WIDTH', 18, 64),
     knob('k6', 'SHIFT', 19, 64, { hint: 'Skew of the modulation wave. Noon is symmetric.' }),
-    fader('f1', 'RAMP', 20, 64),
+    rampSpeed(64, 'RAMP'),
 
     dip('s1', 'BYPASS', 102, 127, { on: 127 }),
     ...clockControls(120, 'flanger period'),

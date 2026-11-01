@@ -1,6 +1,6 @@
-import { dip, fader, knob, select, toggle, value } from '../editor/core/controls';
+import { dip, knob, select, toggle, value } from '../editor/core/controls';
 import type { LedState, MidiMessage, PedalDefinition } from '../editor/core/types';
-import { LED_OFF, presetLed } from './shared';
+import { LED_OFF, presetLed, rampSpeed } from './shared';
 
 // Reference: docs/midi/blooper.md
 // Blooper is a looper: transport is one-shot CCs, loops are zero-based program changes, the modifier
@@ -38,7 +38,7 @@ export const blooper: PedalDefinition = {
     knob('k4', 'MOD A', 17, 64, { hint: 'Noon = neutral.' }),
     knob('k5', 'STABILITY', 18, 0, { hint: 'Min = bypassed; wow, flutter, noise and filtering.' }),
     knob('k6', 'MOD B', 19, 64, { hint: 'Noon = neutral.' }),
-    fader('f1', 'RAMP', 20, 64),
+    rampSpeed(64, 'RAMP'),
 
     toggle('t1', 'MOD A', 21, 1, ['1', '2', '3'], { hint: 'Stock: 1 Chromatic speed · 2 Pitcher · 3 Stutter' }),
     toggle('t2', 'MODE', 22, 1, ['Normal', 'Additive', 'Sampler']),

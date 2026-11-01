@@ -1,6 +1,6 @@
-import { dip, fader, knob } from '../editor/core/controls';
+import { dip, knob } from '../editor/core/controls';
 import type { PedalDefinition } from '../editor/core/types';
-import { CLOCK_TAP, clockControls, clockOnChange, clockSection, knobBlinkMs, LED_OFF, presetLed } from './shared';
+import { CLOCK_TAP, clockControls, clockOnChange, clockSection, knobBlinkMs, LED_OFF, presetLed, rampSpeed } from './shared';
 
 // Reference: docs/midi/warped-vinyl-mkii.md
 // The three toggles and the dip switches have no MIDI control on this pedal.
@@ -23,7 +23,7 @@ export const warpedvinylmkii: PedalDefinition = {
     knob('k4', 'RPM', 17, 100),
     knob('k5', 'DEPTH', 18, 100),
     knob('k6', 'WARP', 19, 58),
-    fader('f1', 'RAMP', 20, 64),
+    rampSpeed(64, 'RAMP'),
 
     dip('s1', 'BYPASS', 102, 127, { on: 127 }),
     ...clockControls(60, 'vibrato period'),

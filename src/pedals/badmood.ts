@@ -1,6 +1,6 @@
-import { dip, fader, knob, rangeOf, select, toggle } from '../editor/core/controls';
+import { dip, knob, rangeOf, select, toggle } from '../editor/core/controls';
 import type { ControlValues, LedState, Option, PedalDefinition, ValueRange } from '../editor/core/types';
-import { customizeDips, dipsSection, LED_OFF, presetLed, rampingDips, STEPPED_CLOCK } from './shared';
+import { customizeDips, dipsSection, LED_OFF, presetLed, rampingDips, rampSpeed, STEPPED_CLOCK } from './shared';
 
 // Reference: docs/midi/bad-mood.md
 
@@ -71,7 +71,7 @@ export const badmood: PedalDefinition = {
       detail: byLoop(['Sensitivity', 'Scan', 'Sensitivity']),
       readout: (value, v) => (v.t3 === 2 ? rangeOf(RADIO_STATIONS, value) : undefined),
     }),
-    fader('f1', 'RAMP SPEED', 20, 64),
+    rampSpeed(64),
 
     toggle('t1', 'WET CHANNEL', 21, 1, ['Soup', 'Relay', 'Flip']),
     toggle('t2', 'ROUTING', 22, 2, ['In', 'Loop + In', 'Loop'], { hint: 'What the wet channel processes; only matters with both channels on.' }),

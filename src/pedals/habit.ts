@@ -1,6 +1,6 @@
-import { dip, fader, knob, toggle, value } from '../editor/core/controls';
+import { dip, knob, toggle, value } from '../editor/core/controls';
 import type { PedalDefinition } from '../editor/core/types';
-import { beatMs, LED_OFF, presetLed } from './shared';
+import { beatMs, LED_OFF, presetLed, rampSpeed } from './shared';
 
 // Reference: docs/midi/habit.md
 
@@ -29,7 +29,7 @@ export const habit: PedalDefinition = {
     knob('k4', 'MOD', 17, 0),
     knob('k5', 'SPREAD', 18, 0),
     knob('k6', 'SCAN', 19, 0),
-    fader('f1', 'RAMP', 20, 64),
+    rampSpeed(64, 'RAMP'),
 
     toggle('t1', 'MOD NUMBER', 21, 2, ['1', '2', '3']),
     toggle('t2', 'MOD BANK', 22, 2, ['A', 'Off', 'B']),

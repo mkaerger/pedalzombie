@@ -1,6 +1,6 @@
-import { dip, fader, knob, toggle } from '../editor/core/controls';
+import { dip, knob, toggle } from '../editor/core/controls';
 import type { PedalDefinition } from '../editor/core/types';
-import { customizeDips, dipsSection, presetLed, rampingDips, RAMPING_IDS, switchLed } from './shared';
+import { customizeDips, dipsSection, presetLed, RAMPING_IDS, rampingDips, rampSpeed, switchLed } from './shared';
 
 // Reference: docs/midi/clean.md
 
@@ -22,7 +22,7 @@ export const clean: PedalDefinition = {
     knob('k4', 'ATTACK', 17, 40),
     knob('k5', 'EQ', 18, 64, { hint: 'Left removes highs, right removes lows.' }),
     knob('k6', 'DRY', 19, 64),
-    fader('f1', 'RAMP SPEED', 20, 64),
+    rampSpeed(64),
 
     toggle('t1', 'RELEASE', 21, 2, ['Fast', 'User', 'Slow']),
     toggle('t2', 'MODE', 22, 2, ['Shifty', 'Manual', 'Modulated'], { hint: 'Dynamic EQ: shifts, fixed, or modulates when you play.' }),

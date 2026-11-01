@@ -68,19 +68,29 @@ export function Fader({
   value,
   min = 0,
   max = 127,
+  ends,
+  readout,
+  hint,
   onChange,
 }: {
   label: string;
   value: number;
   min?: number;
   max?: number;
+  /** Captions under the low and high end of the slider. */
+  ends?: [string, string];
+  readout?: string;
+  hint?: string;
   onChange: (value: number) => void;
 }) {
   const id = useId();
   return (
-    <div className="fader">
+    <div className="fader" title={hint}>
       <label htmlFor={id} className="fader__label">
-        {label} <output>{value}</output>
+        {label}
+        <span>
+          {readout && <span className="fader__readout">{readout}</span>} <output>{value}</output>
+        </span>
       </label>
       <input
         id={id}
@@ -91,6 +101,12 @@ export function Fader({
         style={{ ['--fill' as string]: `${((value - min) / (max - min)) * 100}%` }}
         onChange={(e) => onChange(Number(e.target.value))}
       />
+      {ends && (
+        <div className="fader__ends" aria-hidden="true">
+          <span>{ends[0]}</span>
+          <span>{ends[1]}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
-import { dip, fader, knob, rangeOf, select, toggle } from '../editor/core/controls';
+import { dip, knob, rangeOf, select, toggle } from '../editor/core/controls';
 import type { LedState, Option, PedalDefinition, ValueRange } from '../editor/core/types';
-import { customizeDips, dipsSection, LED_OFF, presetLed, RAMP_WAVEFORMS, rampingDips, STEPPED_CLOCK } from './shared';
+import { customizeDips, dipsSection, LED_OFF, presetLed, RAMP_WAVEFORMS, rampingDips, rampSpeed, STEPPED_CLOCK } from './shared';
 
 // Reference: docs/midi/mood-mkii.md
 
@@ -73,7 +73,7 @@ export const moodmkii: PedalDefinition = {
     knob('k10', 'TONE', 27, 58, { hint: 'Wet channel' }),
     knob('k11', 'LEVEL BALANCE', 28, 58),
     knob('k12', 'DIRECT MICRO-LOOP', 29, 58),
-    fader('f1', 'RAMP SPEED', 20, 21),
+    rampSpeed(21),
 
     toggle('t1', 'WET CHANNEL', 21, 1, ['Reverb', 'Delay', 'Slip']),
     toggle('t2', 'ROUTING', 22, 2, ['In', 'Loop + In', 'Loop']),

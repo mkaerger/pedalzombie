@@ -35,7 +35,20 @@ export function ControlView({ id, size }: { id: string; size?: 'lg' | 'md' }) {
     }
     case 'fader': {
       const label = c.labelFor?.(values) ?? c.label;
-      if (size !== 'lg') return <Fader label={label} value={value} min={c.min} max={c.max} onChange={set} />;
+      if (size !== 'lg') {
+        return (
+          <Fader
+            label={label}
+            value={value}
+            min={c.min}
+            max={c.max}
+            ends={c.ends}
+            readout={c.readout?.(value, values)?.label}
+            hint={c.hint}
+            onChange={set}
+          />
+        );
+      }
       return (
         <MotorFader
           label={label}
