@@ -1027,6 +1027,21 @@
   border-color: var(--danger);
 }
 
+.icon-button--quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-button--quiet:hover {
+  color: var(--text);
+  border-color: var(--pedal-accent);
+}
+
+.preset-files {
+  margin-top: 12px;
+}
+
 .ideas {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));

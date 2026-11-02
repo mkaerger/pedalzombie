@@ -1,9 +1,10 @@
-import { useId, useState, type SubmitEvent, type ReactNode } from 'react';
+import { useId, useRef, useState, type ChangeEvent, type SubmitEvent, type ReactNode } from 'react';
 import { BPM_MAX, BPM_MIN, parseBpm } from '../core/engine';
 import type { PedalDefinition, Section } from '../core/types';
-import type { StoredPreset } from '../core/presets';
+import { describeImport, PresetFileError, type StoredPreset } from '../core/presets';
 import { ControlView } from './ControlView';
 import { useEditor, useEngineState, useMidiState } from './context';
+import { downloadJson, PRESET_FILE_MAX_BYTES, presetFilename, readText } from './files';
 import { usePanelCollapsed } from './usePanelCollapsed';
 
 /** A panel folds away by its title; what is folded is remembered per pedal, so the page can shrink to what you use. */
@@ -239,14 +240,20 @@ export function LockSummary() {
   );
 }
 
+/** What the last export or import did, shown under the preset list until the next action. */
+type Notice = { kind: 'ok' | 'error'; text: string };
+
 export function PresetsPanel() {
   const { engine, presets, track } = useEditor();
   const { values } = useEngineState();
   const [list, setList] = useState<StoredPreset[]>(() => presets.list());
   const [name, setName] = useState('');
+  const [notice, setNotice] = useState<Notice | null>(null);
+  const fileInput = useRef<HTMLInputElement | null>(null);
   const recall = engine.recallRange;
   const [slot, setSlot] = useState(Math.min(3, recall.last));
   const store = engine.pedal.presets.store;
+  const { storageKey } = engine.pedal;
 
   const save = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -255,6 +262,7 @@ export function PresetsPanel() {
     track('preset_save');
     setList(presets.list());
     setName('');
+    setNotice(null);
   };
 
   const remove = (p: StoredPreset) => {
@@ -262,6 +270,31 @@ export function PresetsPanel() {
     presets.remove(p.id);
     track('preset_delete');
     setList(presets.list());
+    setNotice(null);
+  };
+
+  /** One preset, or all of them, as a file on the visitor's computer. */
+  const exportFile = (p?: StoredPreset) => {
+    const file = presets.export(p && [p.id]);
+    downloadJson(presetFilename(storageKey, file.exportedAt, p?.name), file);
+    track('preset_export', { presets: file.presets.length });
+    setNotice({ kind: 'ok', text: p ? `Saved "${p.name}" as a file.` : `Saved ${list.length === 1 ? '1 preset' : `${list.length} presets`} as a file.` });
+  };
+
+  const importFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
+    const file = input.files?.[0];
+    input.value = ''; // the same file can be chosen again
+    if (!file) return;
+    try {
+      if (file.size > PRESET_FILE_MAX_BYTES) throw new PresetFileError('This is not a pedalzombie preset file.');
+      const result = presets.import(await readText(file));
+      track('preset_import', { presets: result.added.length });
+      setList(presets.list());
+      setNotice({ kind: 'ok', text: describeImport(result) });
+    } catch (err) {
+      setNotice({ kind: 'error', text: err instanceof PresetFileError ? err.message : 'The file could not be read.' });
+    }
   };
 
   return (
@@ -290,12 +323,36 @@ export function PresetsPanel() {
                 <button type="button" className="preset-list__load" onClick={() => engine.load(p.values)}>
                   {p.name}
                 </button>
-                <button type="button" className="icon-button" aria-label={`Delete ${p.name}`} onClick={() => remove(p)}>
+                <button type="button" className="icon-button icon-button--quiet" aria-label={`Export ${p.name}`} title="Save as file" onClick={() => exportFile(p)}>
+                  <DownloadIcon />
+                </button>
+                <button type="button" className="icon-button" aria-label={`Delete ${p.name}`} title="Delete" onClick={() => remove(p)}>
                   ×
                 </button>
               </li>
             ))}
           </ul>
+        )}
+        <div className="button-row preset-files">
+          {list.length > 0 && (
+            <button type="button" className="button" onClick={() => exportFile()}>
+              Export all
+            </button>
+          )}
+          <button type="button" className="button" onClick={() => fileInput.current?.click()}>
+            Import…
+          </button>
+          <input ref={fileInput} type="file" accept=".json,application/json" hidden aria-label="Preset file" onChange={importFile} />
+        </div>
+        {notice ? (
+          <p className={notice.kind === 'error' ? 'field-error' : 'hint'} role={notice.kind === 'error' ? 'alert' : 'status'}>
+            {notice.text}
+          </p>
+        ) : (
+          <p className="hint">
+            Export writes a file you can keep as a backup or pass on; Import adds the presets of such a file and never
+            replaces the ones you have.
+          </p>
         )}
       </div>
 
@@ -329,6 +386,14 @@ export function PresetsPanel() {
         )}
       </div>
     </Panel>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 2.5v8M4.8 7.5 8 10.7l3.2-3.2M3 13.5h10" />
+    </svg>
   );
 }
 

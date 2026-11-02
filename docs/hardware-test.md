@@ -15,6 +15,8 @@ Start: `npm run build && npm run preview`, open the editor in Chrome, **Connect 
 - [ ] Recall slot 3 (PC 3)
 - [ ] App preset: save, reload page, load → pedal sounds the same; delete
 - [ ] A preset saved with the **old** editor (same browser profile) still loads
+- [ ] Export all → delete a preset → Import the file → only the deleted one comes back, in its old place; load it →
+      pedal sounds the same. Importing the file again reports "Nothing new"
 - [ ] Randomize: each group changes only the expected controls; a locked control (padlock) keeps its value, MISO is locked by default, locks survive a reload
 - [ ] Ramp speed fader (CC20): value 0 = fastest sweep, 127 = slowest, as the "Dip Switches 101" guide shows for the ramp knob (editor captions fast → slow, UNVERIFIED on hardware)
 - [ ] Editor defaults resets everything

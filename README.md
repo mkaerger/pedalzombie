@@ -98,11 +98,19 @@ npm run build      # static build into dist/
 Presets saved with the old editors keep working: the localStorage keys and control ids (`k1`, `t1`, `d9`, …) are
 unchanged, and missing or unknown values are sanitized on load. Never rename a `storageKey` or a control id.
 
+### Preset files
+
+Export / Import in the Presets panel write and read JSON files (`"format": "pedalzombie-presets"`, `"version": 1`,
+see `src/editor/core/presets.ts`). A file names its pedal (`storageKey`), the export time and, per preset, name, save
+time and values. Import validates the file, sanitizes the values like a stored preset and never replaces an existing
+preset: identical ones are skipped, name clashes get a "(2)" suffix. Bump `PRESET_FILE_VERSION` only for changes older
+editors cannot read; keep reading older versions.
+
 ## Privacy
 
 Presets, MIDI channel and device stay in the browser's local storage. Google Analytics loads only after the visitor
-accepts the cookie banner; the editor then reports which features are used (connect, randomize, presets, footswitches —
-no values, no MIDI data).
+accepts the cookie banner; the editor then reports which features are used (connect, randomize, presets incl. export
+and import counts, footswitches — no values, no MIDI data, no file contents).
 
 ## Deployment
 
