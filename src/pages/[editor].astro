@@ -10,11 +10,13 @@ export function getStaticPaths() {
 }
 
 const pedal = pedals.find((p) => p.slug === Astro.props.slug) as PedalDefinition;
-const description = `Free Web MIDI editor for the ${pedal.manufacturer} ${pedal.name}. ${pedal.tagline}`;
+// Brand, model and "MIDI editor" in every title: that is what people type when they look for one.
+const title = `Chase Bliss ${pedal.name} MIDI editor`;
+const description = `Free Web MIDI editor for the ${pedal.manufacturer} ${pedal.name}, in your browser. ${pedal.tagline}`;
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  name: `${pedal.name} editor`,
+  name: title,
   description,
   url: new URL(`/${pedal.slug}/`, Astro.site).href,
   applicationCategory: 'MultimediaApplication',
@@ -27,7 +29,7 @@ const jsonLd = {
 };
 ---
 
-<Base title={`${pedal.name} editor`} description={description} jsonLd={jsonLd} wide>
+<Base title={title} description={description} jsonLd={jsonLd} wide>
   <div class="wrap">
     <header class="editor-head">
       <div>
