@@ -91,6 +91,10 @@ jobs:
               name="$(basename "$dir")"
               echo "mirror -R --delete --verbose=1 dist/$name /$name"
             done
+            # 3. folders retired from the site (missing after the first run, so a failure here is fine)
+            echo 'set cmd:fail-exit no'
+            echo 'rm -r /rewindalex'
+            echo 'set cmd:fail-exit yes'
             echo 'bye'
           } > lftp.cmds
           lftp -f lftp.cmds

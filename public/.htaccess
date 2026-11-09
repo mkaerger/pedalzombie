@@ -5,6 +5,17 @@ DirectoryIndex index.html
 # Old URLs of the legal pages
 Redirect 301 /impressum/ /legal/
 Redirect 301 /datenschutz/ /privacy/
+# 2023 prototype editor, removed from the server in Nov 2026
+RedirectMatch 301 ^/rewindalex/?$ /moodmkii-editor/
+
+# One address per page: no www, no /index.html (Search Console listed both as duplicates)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^www\.pedalzombie\.com$ [NC]
+  RewriteRule ^(.*)$ https://pedalzombie.com/$1 [R=301,L]
+  RewriteCond %{THE_REQUEST} \s/+(.*/)?index\.html[\s?] [NC]
+  RewriteRule ^(.*/)?index\.html$ https://pedalzombie.com/$1 [R=301,L]
+</IfModule>
 
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
