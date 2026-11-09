@@ -73,10 +73,10 @@ describe('MotorFader', () => {
     Object.defineProperty(slider, 'clientHeight', { value: 134 }); // slot 134 px, cap 34 px → 100 px of travel
     slider.setPointerCapture = () => {};
     fireEvent.pointerDown(slider, { clientY: 300, pointerId: 1 });
-    fireEvent.pointerMove(slider, { clientY: 250 }); // 50 px up = half the range
+    fireEvent.pointerMove(slider, { clientY: 250, pointerId: 1 }); // 50 px up = half the range
     expect(onChange).toHaveBeenLastCalledWith(64);
-    fireEvent.pointerUp(slider);
-    fireEvent.pointerMove(slider, { clientY: 100 }); // released: no more changes
+    fireEvent.pointerUp(slider, { pointerId: 1 });
+    fireEvent.pointerMove(slider, { clientY: 100, pointerId: 1 }); // released: no more changes
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 });
@@ -97,7 +97,7 @@ describe('Knob (shared drag behaviour)', () => {
     fireEvent.wheel(dial, { deltaY: -1 });
     expect(onChange).not.toHaveBeenCalled();
     fireEvent.pointerDown(dial, { clientY: 100, pointerId: 1, button: 0 });
-    fireEvent.pointerUp(dial);
+    fireEvent.pointerUp(dial, { pointerId: 1 });
     fireEvent.wheel(dial, { deltaY: -1 });
     expect(onChange).toHaveBeenLastCalledWith(14);
   });
@@ -105,7 +105,7 @@ describe('Knob (shared drag behaviour)', () => {
   it('hands the wheel back to the page once the pointer leaves, even while still focused', () => {
     const { onChange, dial } = setup();
     fireEvent.pointerDown(dial, { clientY: 100, pointerId: 1, button: 0 });
-    fireEvent.pointerUp(dial);
+    fireEvent.pointerUp(dial, { pointerId: 1 });
     fireEvent.pointerLeave(dial);
     expect(document.activeElement).toBe(dial);
     fireEvent.wheel(dial, { deltaY: -1 });
@@ -115,15 +115,15 @@ describe('Knob (shared drag behaviour)', () => {
   it('starts a drag only with the primary button', () => {
     const { onChange, dial } = setup();
     fireEvent.pointerDown(dial, { clientY: 100, pointerId: 1, button: 2 });
-    fireEvent.pointerMove(dial, { clientY: 50 });
+    fireEvent.pointerMove(dial, { clientY: 50, pointerId: 1 });
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('stops a drag when the pointer capture is lost', () => {
+  it('stops a drag when the browser cancels the pointer', () => {
     const { onChange, dial } = setup();
     fireEvent.pointerDown(dial, { clientY: 100, pointerId: 1, button: 0 });
-    fireEvent.lostPointerCapture(dial);
-    fireEvent.pointerMove(dial, { clientY: 50 });
+    fireEvent.pointerCancel(dial, { pointerId: 1 });
+    fireEvent.pointerMove(dial, { clientY: 50, pointerId: 1 });
     expect(onChange).not.toHaveBeenCalled();
   });
 });

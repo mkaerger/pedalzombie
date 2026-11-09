@@ -280,8 +280,19 @@
   width: var(--size);
   height: var(--size);
   cursor: ns-resize;
-  touch-action: none;
   border-radius: 50%;
+}
+
+/* a finger on a knob or fader turns it; the page must not scroll, select or show a callout.
+   Set on the children too: iOS Safari looks at the touched element, not only its ancestors. */
+.knob__dial,
+.knob__dial *,
+.mfader__slot,
+.mfader__slot * {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .knob__dial svg {
@@ -875,9 +886,14 @@
   appearance: none;
   width: 100%;
   height: 6px;
-  border-radius: 999px;
+  /* iOS only accepts touches inside the input's box: pad it to finger size, paint only the 6 px track */
+  padding: 9px 0;
+  box-sizing: content-box;
   background: linear-gradient(to right, var(--pedal-accent) var(--fill), var(--surface-2) var(--fill));
+  background-clip: content-box;
+  border-radius: 999px;
   cursor: pointer;
+  touch-action: pan-y;
 }
 
 .fader input::-webkit-slider-thumb {
@@ -1291,7 +1307,6 @@
   width: 36px;
   height: var(--slot-height);
   cursor: ns-resize;
-  touch-action: none;
   border-radius: 6px;
 }
 
