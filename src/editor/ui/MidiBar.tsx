@@ -29,7 +29,16 @@ export function MidiBar() {
     <div className={`midibar${connected ? ' is-connected' : ''}`}>
       <span className="midibar__status" role="status">
         <span className="midibar__dot" aria-hidden="true" />
-        {message}
+        <span>
+          {message}
+          {connected && (
+            <span className="midibar__hint">
+              {' '}
+              Move a knob, the pedal should follow. Nothing happens? Check the channel and the cable in the{' '}
+              <a href="/setup/">setup guide</a>.
+            </span>
+          )}
+        </span>
       </span>
 
       {status !== 'ready' ? (

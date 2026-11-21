@@ -28,7 +28,16 @@
   font-size: 0.92rem;
 }
 
+/* after connecting: the pedal cannot answer, so tell people how to check it themselves */
+.midibar__hint {
+  color: var(--muted);
+}
+.midibar__hint a {
+  color: inherit;
+}
+
 .midibar__dot {
+  flex: none;
   width: 10px;
   height: 10px;
   border-radius: 50%;
