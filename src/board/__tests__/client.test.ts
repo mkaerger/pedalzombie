@@ -13,11 +13,15 @@ function page() {
     <span data-board-count></span>
     ${SLUGS.map((s) => `<button data-board-toggle="${s}" aria-pressed="false">${LABEL_ADD}</button>`).join('')}
     <button id="icon" data-board-toggle="moodmkii-editor" data-board-icon aria-pressed="false" aria-label="${LABEL_ADD}"><svg></svg></button>
-    <p data-board-status></p>`;
+    <p data-board-status></p>
+    <span data-board-channel="moodmkii" data-default-channel="2"></span>
+    <span data-board-channel="preampmkii" data-default-channel="1"></span>
+    <span data-board-midi hidden><i class="dot"></i><span data-board-midi-text></span></span>`;
   const slot = (s: string) => document.querySelector<HTMLElement>(`[data-board-slot="${s}"]`)!;
   const toggle = (s: string) => document.querySelector<HTMLButtonElement>(`[data-board-toggle="${s}"]`)!;
   const shown = () => [...document.querySelectorAll<HTMLElement>('#board [data-board-slot]')].filter((el) => !el.hidden).map((el) => el.dataset.boardSlot);
-  return { slot, toggle, shown, count: () => document.querySelector('[data-board-count]')!.textContent };
+  const midi = () => document.querySelector<HTMLElement>('[data-board-midi]')!;
+  return { slot, toggle, shown, count: () => document.querySelector('[data-board-count]')!.textContent, midi };
 }
 
 describe('board page controller', () => {
@@ -82,5 +86,44 @@ describe('board page controller', () => {
     expect(p.shown()).toEqual(['moodmkii-editor']);
     window.dispatchEvent(new StorageEvent('storage', { key: 'something-else' }));
     expect(p.shown()).toEqual(['moodmkii-editor']);
+  });
+
+  it('shows each pedal\'s MIDI channel: the stored one, else the editor default', () => {
+    page();
+    const storage = new MemoryStorage();
+    storage.setItem('moodmkii_midichannel', '7');
+    storage.setItem('preampmkii_midichannel', 'junk');
+    createBoardUi(document, storage);
+    expect(document.querySelector('[data-board-channel="moodmkii"]')!.textContent).toBe('ch 7');
+    expect(document.querySelector('[data-board-channel="preampmkii"]')!.textContent).toBe('ch 1');
+  });
+
+  it('names the remembered MIDI interface when the site may already use Web MIDI', async () => {
+    const p = page();
+    const storage = new MemoryStorage();
+    storage.setItem(BOARD_KEY, JSON.stringify(['moodmkii-editor']));
+    storage.setItem('pedalzombie:midi-output', 'Volt 2');
+    await createBoardUi(document, storage, () => {}, async () => ['IAC Driver Bus 1', 'Volt 2']).ready;
+    expect(p.midi().hidden).toBe(false);
+    expect(p.midi().classList.contains('is-ready')).toBe(true);
+    expect(p.midi().textContent).toBe('Volt 2 ready');
+  });
+
+  it('says so when no interface is plugged in, and stays quiet without permission or without a board', async () => {
+    const p = page();
+    const storage = new MemoryStorage();
+    storage.setItem(BOARD_KEY, JSON.stringify(['moodmkii-editor']));
+    await createBoardUi(document, storage, () => {}, async () => []).ready;
+    expect(p.midi().hidden).toBe(false);
+    expect(p.midi().classList.contains('is-ready')).toBe(false);
+    expect(p.midi().textContent).toBe('no MIDI interface found');
+
+    const quiet = page();
+    await createBoardUi(document, storage, () => {}, async () => null).ready;
+    expect(quiet.midi().hidden).toBe(true);
+
+    const empty = page();
+    await createBoardUi(document, new MemoryStorage(), () => {}, async () => ['Volt 2']).ready;
+    expect(empty.midi().hidden).toBe(true);
   });
 });

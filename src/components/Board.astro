@@ -18,6 +18,7 @@ import PedalMini from './PedalMini.astro';
             <a href={`/${pedal.slug}/`} title={`Open the ${pedal.name} editor`}>
               <PedalMini pedal={pedal} />
               <span class="visually-hidden">{pedal.name}</span>
+              <span class="board__channel" data-board-channel={pedal.storageKey} data-default-channel={pedal.defaultChannel} title="MIDI channel of this editor" />
             </a>
           </li>
         ))
@@ -25,8 +26,11 @@ import PedalMini from './PedalMini.astro';
     </ul>
   </nav>
   <p class="board__caption">
-    <strong>My board</strong> · <span data-board-count>0 pedals</span> · saved in this browser ·
-    <button type="button" class="board__link" data-board-export title="Save your board and its presets as a file">Export</button> ·
+    <strong>My board</strong>
+    <span data-board-count>0 pedals</span>
+    <span class="board__midi" data-board-midi hidden><span class="board__dot" aria-hidden="true"></span><span data-board-midi-text></span></span>
+    <span>saved in this browser</span>
+    <button type="button" class="board__link" data-board-export title="Save your board and its presets as a file">Export</button>
     <button type="button" class="board__link" data-board-import title="Add the pedals and presets of a board file">Import…</button>
   </p>
   <p class="board__hint">
@@ -135,9 +139,42 @@ import PedalMini from './PedalMini.astro';
     display: none; /* display: contents would override the hidden attribute */
   }
   .board__pedals a {
+    position: relative;
     display: block;
     border-radius: 0.75em;
     transition: transform 0.15s;
+  }
+  /* the editor's MIDI channel, the one thing that really is per pedal */
+  .board__channel {
+    position: absolute;
+    right: -5px;
+    bottom: -6px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font: 600 8px/1.4 var(--font);
+    letter-spacing: 0.02em;
+  }
+  .board__channel:empty {
+    display: none;
+  }
+  .board__midi {
+    white-space: nowrap;
+  }
+  .board__dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 5px;
+    border-radius: 50%;
+    background: var(--muted);
+    vertical-align: 0;
+  }
+  .board__midi.is-ready .board__dot {
+    background: var(--brand);
+    box-shadow: 0 0 0 3px rgb(200 241 105 / 0.15);
   }
   .board__pedals a:hover {
     transform: translateY(-3px);
@@ -149,6 +186,13 @@ import PedalMini from './PedalMini.astro';
   }
   .board__caption strong {
     color: var(--text);
+  }
+  /* a middle dot between the parts, whichever are shown; inline-block keeps it out of the buttons' underline */
+  .board__caption > * + *:not([hidden])::before {
+    content: '·';
+    display: inline-block;
+    margin: 0 0.45em 0 0.2em;
+    color: var(--muted);
   }
   .board__status {
     margin: 0.4rem 0 0;

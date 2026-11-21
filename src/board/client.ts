@@ -11,6 +11,8 @@ import { addToBoard, BOARD_KEY, readBoard, removeFromBoard, writeBoard } from '.
  *   [data-board-toggle="<slug>"]  add/remove button, `aria-pressed` and label follow the board
  *                                 (with `data-board-icon`: the label goes to `aria-label` and `title`)
  *   [data-board-count]            "3 pedals"
+ *   [data-board-channel="<storageKey>"] (with data-default-channel)   "ch 2": the editor's MIDI channel
+ *   [data-board-midi] [data-board-midi-text]   the MIDI interface, when the site may use Web MIDI already
  *   [data-board-export] [data-board-import] [data-board-file] [data-board-status]   board file controls
  *   <html data-board="3">         set while the board has pedals, so CSS can swap the hero
  */
@@ -19,11 +21,37 @@ export const LABEL_ON = 'On my board ✓';
 
 type Track = (name: string, params: Record<string, string | number>) => void;
 
+/** Names of the MIDI outputs, or null when Web MIDI is unavailable or the site was not allowed to use it yet. */
+export type MidiProbe = () => Promise<string[] | null>;
+
+const MIDI_OUTPUT_KEY = 'pedalzombie:midi-output';
+
+/** Looks only when the permission is already granted, so the home page never pops the MIDI dialog. */
+export const probeWebMidi: MidiProbe = async () => {
+  try {
+    if (!navigator.requestMIDIAccess || !navigator.permissions) return null;
+    const permission = await navigator.permissions.query({ name: 'midi' as PermissionName });
+    if (permission.state !== 'granted') return null;
+    const access = await navigator.requestMIDIAccess();
+    return [...access.outputs.values()].map((o) => o.name ?? 'MIDI output');
+  } catch {
+    return null;
+  }
+};
+
+/** The editor's MIDI channel as its MIDI bar would show it. */
+export function channelOf(storage: KeyValueStorage, storageKey: string, fallback: string | undefined): number | null {
+  const stored = Number.parseInt(storage.getItem(`${storageKey}_midichannel`) ?? '', 10);
+  if (stored >= 1 && stored <= 16) return stored;
+  const def = Number.parseInt(fallback ?? '', 10);
+  return def >= 1 && def <= 16 ? def : null;
+}
+
 const trackToGtag: Track = (name, params) => {
   if (typeof window.gtag === 'function') window.gtag('event', name, params);
 };
 
-export function createBoardUi(root: Document, storage: KeyValueStorage = safeStorage(), track: Track = trackToGtag) {
+export function createBoardUi(root: Document, storage: KeyValueStorage = safeStorage(), track: Track = trackToGtag, probeMidi: MidiProbe = probeWebMidi) {
   const slots = [...root.querySelectorAll<HTMLElement>('[data-board-slot]')];
   const toggles = [...root.querySelectorAll<HTMLElement>('[data-board-toggle]')];
   const known = new Set([...slots.map((el) => el.dataset.boardSlot), ...toggles.map((el) => el.dataset.boardToggle)].filter((s): s is string => !!s));
@@ -52,6 +80,24 @@ export function createBoardUi(root: Document, storage: KeyValueStorage = safeSto
     for (const el of root.querySelectorAll<HTMLElement>('[data-board-count]')) {
       el.textContent = `${board.length} pedal${board.length === 1 ? '' : 's'}`;
     }
+    for (const el of root.querySelectorAll<HTMLElement>('[data-board-channel]')) {
+      const channel = channelOf(storage, el.dataset.boardChannel ?? '', el.dataset.defaultChannel);
+      el.textContent = channel === null ? '' : `ch ${channel}`;
+    }
+  };
+
+  /** "Volt 2 ready" or "no MIDI interface found", only on pages with the board and once the board has pedals. */
+  const showMidi = async () => {
+    const box = root.querySelector<HTMLElement>('[data-board-midi]');
+    const text = root.querySelector<HTMLElement>('[data-board-midi-text]');
+    if (!box || !text || board.length === 0) return;
+    const outputs = await probeMidi();
+    if (outputs === null) return;
+    const remembered = storage.getItem(MIDI_OUTPUT_KEY);
+    const name = outputs.find((o) => o === remembered) ?? outputs[0];
+    box.classList.toggle('is-ready', !!name);
+    text.textContent = name ? `${name} ready` : 'no MIDI interface found';
+    box.hidden = false;
   };
 
   const say = (text: string, error = false) => {
@@ -112,5 +158,6 @@ export function createBoardUi(root: Document, storage: KeyValueStorage = safeSto
   });
 
   render();
-  return { get board() { return board; }, toggle, render };
+  const ready = showMidi();
+  return { get board() { return board; }, toggle, render, ready };
 }
