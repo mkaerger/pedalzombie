@@ -113,7 +113,10 @@ in board order), `client.ts` wires the markup of a page (`data-board-slot`, `dat
 and `file.ts` writes and reads board files (`"format": "pedalzombie-board"`: the pedals in order, each with its
 presets as in a preset file). The pages render every editor as a hidden slot; the client shows the ones on the board.
 A tiny inline script in `Base.astro` sets `<html data-board>` before the first paint so the home page never flashes
-the empty hero. Board files follow the preset file rules on import and share `PresetFileError`.
+the empty hero. Board files follow the preset file rules on import and share `PresetFileError`. Under the board the
+client names the MIDI interface, but only after `navigator.permissions` reports Web MIDI as granted, so the home page
+never opens the permission dialog; each pedal on the board shows its editor's channel (`<storageKey>_midichannel`,
+else the editor default).
 
 ## Privacy
 

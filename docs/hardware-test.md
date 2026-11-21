@@ -20,6 +20,10 @@ Start: `npm run build && npm run preview`, open the editor in Chrome, **Connect 
 - [ ] My board: Add to my board on two editors → home page shows the board with both, in that order, zombie in the
       corner; the editors show the row; reload keeps it; remove one → it leaves board and row. Export → clear the
       board → Import the file → board and presets are back, importing again reports nothing new
+- [ ] My board, MIDI: with the interface plugged in and Web MIDI allowed, the line under the board shows a green dot
+      and the interface name; unplug it → "no MIDI interface found"; in a fresh profile the line stays away and no
+      MIDI dialog opens on the home page. Change a channel in an editor → its badge on the board follows
+- [ ] MIDI bar after choosing the output: the hint to move a knob appears, its link opens the setup guide
 - [ ] Randomize: each group changes only the expected controls; a locked control (padlock) keeps its value, MISO is locked by default, locks survive a reload
 - [ ] Ramp speed fader (CC20): value 0 = fastest sweep, 127 = slowest, as the "Dip Switches 101" guide shows for the ramp knob (editor captions fast → slow, UNVERIFIED on hardware)
 - [ ] Editor defaults resets everything
