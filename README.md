@@ -59,7 +59,8 @@ src/
   editor/core/   framework-free engine: control model, MIDI, presets, tap tempo, analytics events
   editor/ui/     React components that render any pedal definition
   pedals/        one file per pedal — pure data plus a few small rules
-  pages/         Astro pages; content pages are MDX
+  pages/         Astro pages; content pages are MDX, llms.txt.ts is an endpoint
+  site/          llms.txt builder: a Markdown summary for language models, built from the pedal list
 docs/midi/       MIDI reference per pedal, transcribed from the official manuals
 docs/            hardware test checklist
 ```
