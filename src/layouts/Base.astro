@@ -47,6 +47,13 @@ const nav = [
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#0e0e11" />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <!-- "My board" state before the first paint, so a filled board never flashes the empty hero -->
+    <script is:inline>
+      try {
+        const board = JSON.parse(localStorage.getItem('pedalzombie:board') || '[]');
+        if (Array.isArray(board) && board.length > 0) document.documentElement.dataset.board = String(board.length);
+      } catch {}
+    </script>
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -87,6 +94,10 @@ const nav = [
     </footer>
 
     <Consent />
+    <script>
+      import { createBoardUi } from '../board/client';
+      if (document.querySelector('[data-board-slot], [data-board-toggle]')) createBoardUi(document);
+    </script>
   </body>
 </html>
 

@@ -61,6 +61,18 @@ const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v =
 
 const cleanName = (name: string) => name.trim().slice(0, NAME_MAX) || 'Untitled';
 
+/** The `presets` list of a file: names trimmed, values sanitized; throws `PresetFileError` for a damaged entry. */
+export function parsePresetList(pedal: PedalDefinition, list: unknown): FilePreset[] {
+  if (!Array.isArray(list)) throw new PresetFileError('This file contains no presets.');
+  return list.map((p: unknown, i: number): FilePreset => {
+    if (!isRecord(p) || typeof p.name !== 'string' || !p.name.trim() || !isRecord(p.values)) {
+      throw new PresetFileError(`Preset ${i + 1} in this file is damaged.`);
+    }
+    const savedAt = typeof p.savedAt === 'string' && Number.isFinite(Date.parse(p.savedAt)) ? p.savedAt : undefined;
+    return { name: cleanName(p.name), ...(savedAt && { savedAt }), values: sanitize(pedal, p.values) };
+  });
+}
+
 /**
  * Check a file's text against the format and this pedal. Returns the file with
  * names trimmed and values sanitized; throws `PresetFileError` otherwise.
@@ -88,13 +100,7 @@ export function parsePresetFile(pedal: PedalDefinition, text: string): PresetFil
   if (!Array.isArray(data.presets) || data.presets.length === 0) {
     throw new PresetFileError('This file contains no presets.');
   }
-  const presets = data.presets.map((p: unknown, i: number): FilePreset => {
-    if (!isRecord(p) || typeof p.name !== 'string' || !p.name.trim() || !isRecord(p.values)) {
-      throw new PresetFileError(`Preset ${i + 1} in this file is damaged.`);
-    }
-    const savedAt = typeof p.savedAt === 'string' && Number.isFinite(Date.parse(p.savedAt)) ? p.savedAt : undefined;
-    return { name: cleanName(p.name), ...(savedAt && { savedAt }), values: sanitize(pedal, p.values) };
-  });
+  const presets = parsePresetList(pedal, data.presets);
   return {
     format: PRESET_FILE_FORMAT,
     version: data.version,
@@ -194,7 +200,11 @@ export class PresetStore {
    * preset is skipped, a different one of the same name gets "(2)" appended.
    */
   import(text: string): ImportResult {
-    const file = parsePresetFile(this.pedal, text);
+    return this.importPresets(parsePresetFile(this.pedal, text).presets);
+  }
+
+  /** Merge already parsed presets (a preset file's or a board file's) into this browser; see `import`. */
+  importPresets(presets: FilePreset[]): ImportResult {
     const raw = readRaw(this.storage, this.pedal.storageKey);
     const existing = this.list();
     const taken = new Set(existing.map((p) => p.name));
@@ -203,7 +213,7 @@ export class PresetStore {
     const result: ImportResult = { added: [], skipped: [], renamed: [] };
     const same = (a: ControlValues, b: ControlValues) => this.pedal.controls.every((c) => a[c.id] === b[c.id]);
 
-    for (const preset of file.presets) {
+    for (const preset of presets) {
       if (seen.some((p) => p.name === preset.name && same(p.values, preset.values))) {
         result.skipped.push(preset.name);
         continue;

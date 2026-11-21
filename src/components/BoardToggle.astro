@@ -1,0 +1,74 @@
+---
+/**
+ * "Add to my board" / "On my board ✓" for one pedal; `src/board/client.ts` keeps it in sync.
+ * `icon` renders a small round button (plus / check) whose label lives in `aria-label` and `title`.
+ */
+import type { PedalDefinition } from '../editor/core/types';
+import { LABEL_ADD } from '../board/client';
+
+interface Props {
+  pedal: PedalDefinition;
+  icon?: boolean;
+}
+
+const { pedal, icon = false } = Astro.props;
+---
+
+{
+  icon ? (
+    <button
+      type="button"
+      class="board-toggle board-toggle--icon"
+      data-board-toggle={pedal.slug}
+      data-board-icon
+      aria-pressed="false"
+      aria-label={LABEL_ADD}
+      title={LABEL_ADD}
+    >
+      <svg class="board-toggle__add" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M8 3v10M3 8h10" />
+      </svg>
+      <svg class="board-toggle__on" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 8.5l3.2 3L13 4.5" />
+      </svg>
+    </button>
+  ) : (
+    <button type="button" class="button board-toggle" data-board-toggle={pedal.slug} aria-pressed="false" title={`Keep ${pedal.name} on your board for quick access`}>
+      {LABEL_ADD}
+    </button>
+  )
+}
+
+<style>
+  .board-toggle[aria-pressed='true'] {
+    border-color: var(--brand);
+    color: var(--brand);
+  }
+  .board-toggle--icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .board-toggle--icon:hover {
+    border-color: var(--muted);
+    color: var(--text);
+  }
+  .board-toggle--icon[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--brand) 18%, var(--surface-2));
+  }
+  .board-toggle--icon .board-toggle__on,
+  .board-toggle--icon[aria-pressed='true'] .board-toggle__add {
+    display: none;
+  }
+  .board-toggle--icon[aria-pressed='true'] .board-toggle__on {
+    display: block;
+  }
+</style>

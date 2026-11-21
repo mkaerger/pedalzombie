@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import PedalCard from '../components/PedalCard.astro';
 import SetupChain from '../components/SetupChain.astro';
+import Board from '../components/Board.astro';
 import { automatonePedals, classicPedals } from '../pedals';
 
 const jsonLd = {
@@ -32,7 +33,7 @@ const jsonLd = {
         <a class="button" href="/setup/">What do I need?</a>
       </div>
     </div>
-    <img class="hero__zombie" src="/img/zombie.svg" alt="" width="340" height="340" />
+    <Board />
   </section>
 
   <section class="wrap automatone" id="automatone" aria-labelledby="automatone-title">
@@ -75,20 +76,18 @@ const jsonLd = {
     column-gap: 3rem;
     padding-block: clamp(1rem, 6vw, 4rem) clamp(2.5rem, 8vw, 5rem);
   }
-  .hero__zombie {
-    width: clamp(160px, 24vw, 340px);
-    height: auto;
-    transform: rotate(-6deg);
-    filter: drop-shadow(0 20px 50px rgb(110 200 170 / 0.25));
-  }
   @media (max-width: 700px) {
     .hero {
       grid-template-columns: 1fr;
     }
-    .hero__zombie {
+    /* the zombie greets first; a filled board comes after the text */
+    .hero > :global(.board) {
       order: -1;
-      width: 120px;
       margin-bottom: 1rem;
+    }
+    :global(html[data-board]) .hero > :global(.board) {
+      order: 1;
+      margin-bottom: 0;
     }
   }
   .hero h1 {

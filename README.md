@@ -106,11 +106,21 @@ time and values. Import validates the file, sanitizes the values like a stored p
 preset: identical ones are skipped, name clashes get a "(2)" suffix. Bump `PRESET_FILE_VERSION` only for changes older
 editors cannot read; keep reading older versions.
 
+### My board
+
+`src/board/` holds the visitor's board: `store.ts` reads and writes `localStorage["pedalzombie:board"]` (editor slugs
+in board order), `client.ts` wires the markup of a page (`data-board-slot`, `data-board-toggle`, …; see its header)
+and `file.ts` writes and reads board files (`"format": "pedalzombie-board"`: the pedals in order, each with its
+presets as in a preset file). The pages render every editor as a hidden slot; the client shows the ones on the board.
+A tiny inline script in `Base.astro` sets `<html data-board>` before the first paint so the home page never flashes
+the empty hero. Board files follow the preset file rules on import and share `PresetFileError`.
+
 ## Privacy
 
-Presets, MIDI channel and device stay in the browser's local storage. Google Analytics loads only after the visitor
-accepts the cookie banner; the editor then reports which features are used (connect, randomize, presets incl. export
-and import counts, footswitches — no values, no MIDI data, no file contents).
+Presets, MIDI channel, device and the visitor's board ("My board": the editors they marked as their own) stay in the
+browser's local storage. Google Analytics loads only after the visitor accepts the cookie banner; the site then
+reports which features are used (connect, randomize, presets incl. export and import counts, footswitches, pedals
+added to or removed from the board — no values, no MIDI data, no file contents).
 
 ## Deployment
 

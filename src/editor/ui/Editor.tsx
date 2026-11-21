@@ -3,34 +3,14 @@ import { createTracker, watchMidi } from '../core/analytics';
 import { EditorEngine } from '../core/engine';
 import { LockStore } from '../core/locks';
 import { createWebMidiBackend, MidiConnection } from '../core/midi';
-import { PresetStore, type KeyValueStorage } from '../core/presets';
+import { PresetStore } from '../core/presets';
+import { safeStorage } from '../core/storage';
 import { pedalBySlug } from '../../pedals';
 import { EditorContext, type EditorServices } from './context';
 import { MidiBar } from './MidiBar';
 import { PedalFace } from './PedalFace';
 import { IdeasPanel, MidiMonitor, PresetsPanel, SectionPanel, ToolsPanel } from './Panels';
 import './editor.css';
-
-/** localStorage can throw (private mode, blocked site data) — degrade to memory. */
-function safeStorage(): KeyValueStorage {
-  const memory = new Map<string, string>();
-  return {
-    getItem(key) {
-      try {
-        return window.localStorage.getItem(key);
-      } catch {
-        return memory.get(key) ?? null;
-      }
-    },
-    setItem(key, value) {
-      try {
-        window.localStorage.setItem(key, value);
-      } catch {
-        memory.set(key, value);
-      }
-    },
-  };
-}
 
 function useServices(slug: string): EditorServices {
   return useMemo(() => {

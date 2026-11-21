@@ -1,0 +1,131 @@
+---
+/**
+ * On editor pages: the visitor's board as a row of chips, one click to any of their pedals.
+ * Hidden until the board has pedals; `src/board/client.ts` shows and orders the chips.
+ */
+import { pedals } from '../pedals';
+import PedalMini from './PedalMini.astro';
+
+interface Props {
+  /** Slug of the editor shown on this page. */
+  current: string;
+}
+
+const { current } = Astro.props;
+---
+
+<nav class="boardstrip" aria-label="My board">
+  <a class="boardstrip__label" href="/" title="Your board on the home page">My board</a>
+  <ul>
+    {
+      pedals.map((pedal) => (
+        <li data-board-slot={pedal.slug} hidden>
+          <a href={`/${pedal.slug}/`} aria-current={pedal.slug === current ? 'page' : undefined}>
+            <span class="boardstrip__pedal"><PedalMini pedal={pedal} /></span>
+            <span>{pedal.name}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  .boardstrip {
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  :global(html[data-board]) .boardstrip {
+    display: flex;
+  }
+  .boardstrip__label {
+    flex: none;
+    font: 600 0.72rem/1 var(--font);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .boardstrip__label:hover {
+    color: var(--brand);
+  }
+  .boardstrip ul {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-width: 0; /* a flex child only shrinks (and scrolls) with this */
+    margin: 0;
+    padding: 2px;
+    list-style: none;
+  }
+  @media (max-width: 700px) {
+    /* one scrolling row on phones instead of a tall block */
+    .boardstrip ul {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+  .boardstrip li {
+    display: contents;
+  }
+  .boardstrip li[hidden] {
+    display: none; /* display: contents would override the hidden attribute */
+  }
+  .boardstrip ul a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: none;
+    padding: 4px 12px 4px 5px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .boardstrip ul a:hover {
+    border-color: var(--muted);
+  }
+  .boardstrip ul a[aria-current='page'] {
+    border-color: var(--brand);
+    background: var(--surface-2);
+  }
+  /* the top of the pedal in a small rounded square: body colour and knobs, nothing sticking out */
+  .boardstrip__pedal {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    overflow: hidden;
+    border-radius: 7px;
+  }
+  .boardstrip__pedal :global(.mini) {
+    font-size: 3.7px; /* 26 px wide */
+    border-radius: 0;
+    box-shadow: none;
+    transform-origin: 50% 100%; /* grows upward, away from the MIDI bar */
+    transition: transform 0.18s ease-out, border-radius 0.18s, box-shadow 0.18s;
+  }
+  /* with a mouse: the whole pedal pops out of the chip, over the frame and its neighbours */
+  @media (hover: hover) {
+    .boardstrip ul a:hover {
+      position: relative;
+      z-index: 2;
+    }
+    .boardstrip ul a:hover .boardstrip__pedal {
+      overflow: visible;
+    }
+    .boardstrip ul a:hover .boardstrip__pedal :global(.mini) {
+      transform: scale(2.6);
+      border-radius: 0.75em;
+      box-shadow: 0 0.5em 1em -0.3em rgb(0 0 0 / 0.9);
+    }
+  }
+</style>
